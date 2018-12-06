@@ -9,9 +9,11 @@
 #include <string>
 #include <vector>
 
-namespace server_parser {
+class server_parser {
+private:
     std::vector<std::string> server_args;
-    std::vector<std::string> read_args(std::string args_file);
+public:
+    explicit server_parser(std::string args_file);
     int get_port_number();
     int get_max_window_size();
     int get_random_seed();

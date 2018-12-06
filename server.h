@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include "server_parser.h"
 
 class server {
 private:
@@ -20,11 +21,18 @@ private:
     int socket_fd;
     struct sockaddr_in server_address;
     int port_number;
-
-public:
-    void set_server_mode();
+    int random_seed;
+    float loss_probability;
 
     void init();
+
+public:
+    const int MAX_WINDOW_SIZE;
+
+    explicit server(server_parser serv_parser);
+    void set_server_mode();
+    void start();
+
 
 
 };
