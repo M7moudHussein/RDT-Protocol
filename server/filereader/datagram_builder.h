@@ -4,7 +4,7 @@
 
 #include <string>
 #include <queue>
-#include "datagram.h"
+#include "../../shared/datagram.h"
 
 class datagram_builder {
 public:

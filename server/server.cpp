@@ -8,7 +8,7 @@
 #include <iostream>
 #include "server.h"
 #include <unistd.h>
-#include "server_parser.h"
+#include "parser/server_parser.h"
 
 
 server::server(server_parser serv_parser) : MAX_WINDOW_SIZE(serv_parser.get_max_window_size()) {
