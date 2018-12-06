@@ -15,6 +15,8 @@ set(CLIENT_SOURCE_FILES
         client.cpp client.h)
 
 set(SHARED_SOURCE_FILES
+        datagram.h
+        datagram.cpp
         datagram_builder.h
         datagram_builder.cpp
         )
