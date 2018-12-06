@@ -1,2 +1,4 @@
 .idea/
 cmake-build-debug/
+!cmake-build-debug/server.in
+!cmake-build-debug/client.in
