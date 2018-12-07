@@ -162,9 +162,6 @@ void server::dispatch_worker_thread(sockaddr_in client_address, std::string file
 void server::handle_worker_thread(sockaddr_in client_address, std::string file_path) {
     rdt_strategy *rdt;
 
-    std::thread *timer_th = new std::thread(&server::resend_packet);
-    timer_thread *timer = new timer_thread(timer_th);
-
     switch (this->server_mode) {
         case STOP_AND_WAIT:
             rdt = new selective_repeat_strategy(file_path, 0);
@@ -199,8 +196,8 @@ void server::finalize_worker_thread() {
     server::working_threads_mtx.unlock();
 }
 
-void server::resend_packet() {
-//TODO
+data_packet *server::get_first_unacked_packet() {
+    return * unacked_packets.begin();
 }
 
 void validate_args(int argc, char **argv) {

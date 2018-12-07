@@ -43,6 +43,6 @@ const std::string &data_packet::get_data() const {
     return data;
 }
 
-std::time_t data_packet::get_time_stamp() const {
+std::chrono::steady_clock::time_point data_packet::get_time_stamp() const {
     return this->time_stamp;
 }

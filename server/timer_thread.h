@@ -16,6 +16,7 @@ class timer_thread {
 public:
     timer_thread(std::thread *thread);
     void detach();
+    void sleep_until(std::chrono::steady_clock::time_point time);
     std::mutex get_mutex();
     std::condition_variable get_cond_var();
     virtual ~timer_thread();

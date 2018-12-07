@@ -2,6 +2,7 @@
 #define RDT_PROTOCOL_DATA_GRAM_H
 
 #include <ctime>
+#include <chrono>
 
 #define DATAGRAM_SIZE
 #define PACKET_SIZE 500
@@ -24,7 +25,7 @@ public:
 
     const std::string &get_data() const;
 
-    std::time_t get_time_stamp() const;
+    std::chrono::steady_clock::time_point get_time_stamp() const;
 
     friend std::ostream& operator <<(std::ostream &strm, const data_packet &packet);
 
@@ -38,7 +39,7 @@ private:
     uint16_t cksum;
     uint16_t len;
     uint32_t seqno;
-    std::time_t time_stamp;
+    std::chrono::steady_clock::time_point time_stamp;
 
     std::string data;
 };

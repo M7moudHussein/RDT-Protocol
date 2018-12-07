@@ -16,7 +16,6 @@
 #include "parser/server_parser.h"
 #include "worker_thread.h"
 #include "../shared/data_packet.h"
-
 class server {
 private:
     enum mode {
@@ -53,16 +52,15 @@ private:
 
     void init();
 
-    void resend_packet();
 
 public:
     const int MAX_WINDOW_SIZE;
 
-    const int PACKET_TIME_OUT = 5; // time out assumed
-
     explicit server(server_parser serv_parser);
 
     void start();
+
+    data_packet* get_first_unacked_packet();
 
 
 };
