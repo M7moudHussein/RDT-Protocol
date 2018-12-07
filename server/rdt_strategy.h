@@ -11,6 +11,8 @@ public:
 
     virtual void start() = 0;
 
+    virtual void advance_window() = 0;
+
     void set_client_address(sockaddr_in client_address);
 
     bool is_done();

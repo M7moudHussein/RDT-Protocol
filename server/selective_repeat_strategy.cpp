@@ -16,9 +16,15 @@ selective_repeat_strategy::selective_repeat_strategy(std::string file_name) {
 }
 
 void selective_repeat_strategy::acknowledge_packet(ack_packet ack_pkt) {
+    // when ack received pop packet from window queue.
 
 }
 
 void selective_repeat_strategy::start() {
+}
 
+void selective_repeat_strategy::advance_window() {
+    for(int i = 0; i < window_size && pkt_builder->has_next(); i++){
+        window.push(pkt_builder->get_next_packet());
+    }
 }
