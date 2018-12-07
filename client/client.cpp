@@ -20,7 +20,9 @@ void client::run() {
     sendto(socket_fd, req_datagram_buffer.c_str(), req_datagram_buffer.length(),
            0, (const struct sockaddr *) &server_addr, sizeof(server_addr));
 
-    /* Wait for new datagrams */
+    /* Waiting for ACK should go here*/
+
+    /* Waiting for new datagrams */
     receive_datagrams();
     
     /* Closing client socket */
