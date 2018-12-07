@@ -153,6 +153,18 @@ void server::dispatch_worker_thread(sockaddr_in client_address) {
 }
 
 void server::handle_worker_thread() {
+    // create buffer of size N
+
+    // create priority queue with size N for timeouts.
+
+    // create N packets
+
+    // add N packets to buffer and PQ
+
+    // Send packets to clients
+
+    // initialize monitoring thread and cond var so that monitoring thread wait on it
+
 
 
     // After all client handling is finished, mark yourself as done to be cleaned up by cleanup thread
