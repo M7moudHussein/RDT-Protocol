@@ -85,7 +85,9 @@ void server::start() {
         if (server::registered_clients.find(client_address_string) != server::registered_clients.end()) {
             // Client already registered, change corresponding bool to true
             server::worker_threads_acks_mtx.lock();
+            server::registered_clients_mtx.lock();
             server::worker_threads_acks[server::registered_clients[client_address_string]] = true;
+            server::registered_clients_mtx.unlock();
             server::worker_threads_acks_mtx.unlock();
 
             // TODO: Notify corresponding worker thread
@@ -100,8 +102,7 @@ void server::start() {
                    client_address_len);
 
             // Dispatch worker thread
-            server::dispatch_worker_thread(client_address,
-                                           ""); //TODO change the  string to the valid file path (relative path)
+            server::dispatch_worker_thread(client_address, ""); //TODO change the  string to the valid file path (relative path)
         }
     }
 }

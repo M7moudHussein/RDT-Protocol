@@ -30,3 +30,4 @@ set(SHARED_SOURCE_FILES
 
 add_executable(server ${SHARED_SOURCE_FILES} ${SERVER_SOURCE_FILES})
 add_executable(client ${SHARED_SOURCE_FILES} ${CLIENT_SOURCE_FILES})
+add_executable(dummy_client dummy_client.cpp)

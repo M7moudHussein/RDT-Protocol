@@ -38,7 +38,6 @@ private:
     std::map<std::thread::id, bool> worker_threads_acks;
     std::mutex worker_threads_acks_mtx;
 
-
     void dispatch_worker_thread(sockaddr_in client_address, std::string file_path);
 
     void handle_worker_thread(sockaddr_in client_address, std::string file_path);
