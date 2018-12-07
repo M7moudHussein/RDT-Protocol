@@ -89,13 +89,7 @@ void server::start() {
             server::registered_clients_mtx.unlock();
 
             server::worker_threads_acks_mtx.lock();
-            worker_controls *controls = server::worker_threads_acks[worker_to_ack];
-            {
-                std::lock_guard<std::mutex> lk(controls->m);
-                controls->ack_arrived = true;
-                controls->ack = ack;
-            }
-            controls->cv.notify_one();
+            server::worker_threads_acks[worker_to_ack].push(ack);
             server::worker_threads_acks_mtx.unlock();
         } else {
             // Acknowledge receiving of request
@@ -122,7 +116,6 @@ void server::cleanup_working_threads() {
             if (it->second->is_done()) {
                 // Removing entry from worker_threads_acks map
                 server::worker_threads_acks_mtx.lock();
-                delete server::worker_threads_acks[it->first];
                 server::working_threads.erase(it->first);
                 server::worker_threads_acks_mtx.unlock();
 
@@ -154,10 +147,6 @@ void server::dispatch_worker_thread(sockaddr_in client_address, std::string file
     server::registered_clients_mtx.lock();
     server::registered_clients[get_address_string(client_address)] = wrk_th->get_thread_id();
     server::registered_clients_mtx.unlock();
-
-    server::worker_threads_acks_mtx.lock();
-    server::worker_threads_acks[wrk_th->get_thread_id()] = new worker_controls();
-    server::worker_threads_acks_mtx.unlock();
 
     server::working_threads_mtx.lock();
     server::working_threads[wrk_th->get_thread_id()] = wrk_th;
@@ -191,15 +180,18 @@ void server::handle_worker_thread(sockaddr_in client_address, std::string file_p
 
     while (!rdt->is_done()) {
         std::thread::id worker_id = std::this_thread::get_id();
-        this->worker_threads_acks_mtx.lock();
-        worker_controls *controls = this->worker_threads_acks[worker_id];
-        this->worker_threads_acks_mtx.unlock();
+        ack_packet ack;
+        while (true) {
+            this->worker_threads_acks_mtx.lock();
+            if (!this->worker_threads_acks[worker_id].empty()) {
+                ack = this->worker_threads_acks[worker_id].front();
+                this->worker_threads_acks[worker_id].pop();
+                break;
+            }
+            this->worker_threads_acks_mtx.unlock();
+        }
 
-        std::unique_lock<std::mutex> lk(controls->m);
-        controls->cv.wait(lk, [controls] { return controls->ack_arrived; });
-
-        rdt->acknowledge_packet(controls->ack);
-        lk.unlock();
+        rdt->acknowledge_packet(ack);
     }
 
     // After all client handling is finished, mark yourself as done to be cleaned up by cleanup thread
@@ -210,10 +202,6 @@ void server::finalize_worker_thread() {
     server::working_threads_mtx.lock();
     server::working_threads[std::this_thread::get_id()]->mark_done();
     server::working_threads_mtx.unlock();
-}
-
-data_packet *server::get_first_unacked_packet() {
-    return * unacked_packets.begin();
 }
 
 void validate_args(int argc, char **argv) {
