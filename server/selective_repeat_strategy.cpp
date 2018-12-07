@@ -10,6 +10,8 @@
 
 selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int window_size) {
     this->pkt_builder = new packet_builder(std::move(file_name), window_size);
+    //fill queue of unacked packets with N packets initially
+    fill_window();
 }
 
 selective_repeat_strategy::selective_repeat_strategy(std::string file_name) {
@@ -25,6 +27,9 @@ void selective_repeat_strategy::acknowledge_packet(ack_packet ack_pkt) {
         if (ack_pkt.get_ackno() == (*it)->get_seqno()) {
             if (!(*it)->is_acked()) {//duplicate acks skip
                 (*it)->ack();
+                set_mutex.lock();
+                unacked_packets.erase((*it));
+                set_mutex.unlock();
                 if (it == window.begin())
                     selective_repeat_strategy::advance_window();
             }
