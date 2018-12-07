@@ -47,3 +47,7 @@ void data_packet::set_seqno(uint32_t seqno) {
 const std::string &data_packet::get_data() const {
     return data;
 }
+
+std::chrono::steady_clock::time_point data_packet::get_time_stamp() const {
+    return this->time_stamp;
+}

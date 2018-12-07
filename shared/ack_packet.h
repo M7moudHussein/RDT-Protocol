@@ -18,7 +18,7 @@ public:
 
     uint32_t get_ackno() const;
 
-    friend std::ostream& operator <<(std::ostream &strm, const ack_packet &packet);
+    friend std::ostream &operator<<(std::ostream &strm, const ack_packet &packet);
 
 private:
     uint16_t cksum, len;
