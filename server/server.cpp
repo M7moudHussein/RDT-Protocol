@@ -7,10 +7,7 @@
 #include <cstring>
 #include <iostream>
 #include "server.h"
-#include <unistd.h>
 #include <sstream>
-#include "parser/server_parser.h"
-#include "../shared/ack_packet.h"
 #include "rdt_strategy.h"
 #include "selective_repeat_strategy.h"
 #include "timer_thread.h"
@@ -84,12 +81,22 @@ void server::start() {
         // Check if client_address is registered or not
         std::string client_address_string = get_address_string(client_address);
         if (server::registered_clients.find(client_address_string) != server::registered_clients.end()) {
+            ack_packet ack; //TODO set with the ack which arrived
             // Client already registered, change corresponding bool to true
-            server::worker_threads_acks_mtx.lock();
-            server::worker_threads_acks[server::registered_clients[client_address_string]] = true;
-            server::worker_threads_acks_mtx.unlock();
 
-            // TODO: Notify corresponding worker thread
+            server::registered_clients_mtx.lock();
+            std::thread::id worker_to_ack = server::registered_clients[client_address_string];
+            server::registered_clients_mtx.unlock();
+
+            server::worker_threads_acks_mtx.lock();
+            worker_controls *controls = server::worker_threads_acks[worker_to_ack];
+            {
+                std::lock_guard<std::mutex> lk(controls->m);
+                controls->ack_arrived = true;
+                controls->ack = ack;
+            }
+            controls->cv.notify_one();
+            server::worker_threads_acks_mtx.unlock();
         } else {
             // Acknowledge receiving of request
             ack_packet ack;
@@ -102,7 +109,7 @@ void server::start() {
 
             // Dispatch worker thread
             server::dispatch_worker_thread(client_address,
-                                           ""); //TODO change the  string to the valid file path (relative path)
+                                           ""); //TODO change the string to the valid file path (relative path)
         }
     }
 }
@@ -115,7 +122,8 @@ void server::cleanup_working_threads() {
             if (it->second->is_done()) {
                 // Removing entry from worker_threads_acks map
                 server::worker_threads_acks_mtx.lock();
-                server::worker_threads_acks.erase(it->first);
+                delete server::worker_threads_acks[it->first];
+                server::working_threads.erase(it->first);
                 server::worker_threads_acks_mtx.unlock();
 
                 // Removing entry from registered clients map (done in O(n) because tid is value not key)
@@ -148,7 +156,7 @@ void server::dispatch_worker_thread(sockaddr_in client_address, std::string file
     server::registered_clients_mtx.unlock();
 
     server::worker_threads_acks_mtx.lock();
-    server::worker_threads_acks[wrk_th->get_thread_id()] = false;
+    server::worker_threads_acks[wrk_th->get_thread_id()] = new worker_controls();
     server::worker_threads_acks_mtx.unlock();
 
     server::working_threads_mtx.lock();
@@ -160,7 +168,8 @@ void server::dispatch_worker_thread(sockaddr_in client_address, std::string file
 
 
 void server::handle_worker_thread(sockaddr_in client_address, std::string file_path) {
-    rdt_strategy *rdt;
+    rdt_strategy *rdt = nullptr;
+
     switch (this->server_mode) {
         case STOP_AND_WAIT:
             rdt = new selective_repeat_strategy(file_path, 0);
@@ -181,8 +190,16 @@ void server::handle_worker_thread(sockaddr_in client_address, std::string file_p
     rdt->start();
 
     while (!rdt->is_done()) {
-        //TODO wait on CV to get new ACK
-//        rdt->acknowledge_packet(); //TODO notify the rdt to ack the received packet and do the proper action
+        std::thread::id worker_id = std::this_thread::get_id();
+        this->worker_threads_acks_mtx.lock();
+        worker_controls *controls = this->worker_threads_acks[worker_id];
+        this->worker_threads_acks_mtx.unlock();
+
+        std::unique_lock<std::mutex> lk(controls->m);
+        controls->cv.wait(lk, [controls] { return controls->ack_arrived; });
+
+        rdt->acknowledge_packet(controls->ack);
+        lk.unlock();
     }
 
     // After all client handling is finished, mark yourself as done to be cleaned up by cleanup thread
@@ -193,10 +210,6 @@ void server::finalize_worker_thread() {
     server::working_threads_mtx.lock();
     server::working_threads[std::this_thread::get_id()]->mark_done();
     server::working_threads_mtx.unlock();
-}
-
-data_packet *server::get_first_unacked_packet() {
-    return * unacked_packets.begin();
 }
 
 void validate_args(int argc, char **argv) {

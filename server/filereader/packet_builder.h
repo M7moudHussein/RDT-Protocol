@@ -15,6 +15,8 @@ public:
     bool has_next();
 
 private:
+    std::string get_absolute_path(std::string relative_path);
+
     FILE *fp;
     int queue_size;
     size_t data_not_read;
