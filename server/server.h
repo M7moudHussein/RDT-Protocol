@@ -32,9 +32,15 @@ private:
     std::mutex working_threads_mtx;
 
     std::map<std::string, std::thread::id> registered_clients;
+    std::mutex registered_clients_mtx;
+
     std::map<std::thread::id, bool> worker_threads_acks;
+    std::mutex worker_threads_acks_mtx;
 
 
+    void dispatch_worker_thread(sockaddr_in client_address);
+    void handle_worker_thread();
+    void finalize_worker_thread();
     void cleanup_working_threads();
     void init();
 
