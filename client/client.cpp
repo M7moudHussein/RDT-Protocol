@@ -2,9 +2,11 @@
 #include <cstring>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <sstream>
 #include "client.h"
 #include "parser/client_parser.h"
-#include "../shared/datagram_util.h"
+#include "../shared/packet_util.h"
+#include "../shared/data_packet.h"
 
 client::client(string args_file_path) : parser(args_file_path) {
     init();
@@ -55,11 +57,13 @@ void client::init() {
 
 string client::create_req_datagram() {
     string data = parser.get_req_file_name();
-    datagram req_datagram(data);
-    req_datagram.set_len(static_cast<uint16_t>(data.length()));
-    req_datagram.set_seq_no(0);
-    req_datagram.set_checksum(calculate_checksum(req_datagram)); // last step after setting all headers
-    return req_datagram.to_string();
+    data_packet pkt(data);
+    pkt.set_len(static_cast<uint16_t>(data.length()));
+    pkt.set_seqno(0);
+    pkt.set_cksum(calculate_checksum(pkt)); // last step after setting all headers
+    std::stringstream pkt_buffer;
+    pkt_buffer << pkt;
+    return pkt_buffer.str();
 }
 
 void client::receive_datagrams() {

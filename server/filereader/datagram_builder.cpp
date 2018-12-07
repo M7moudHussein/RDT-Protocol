@@ -17,7 +17,7 @@ datagram_builder::datagram_builder(std::string absolute_path, int queue_size) {
     }
 }
 
-datagram *datagram_builder::get_next_datagram() {
+data_packet *datagram_builder::get_next_datagram() {
     if (data_not_read > 0 && datagram_queue.empty()) {
         size_t read_length = fread(buffer, sizeof(char), BUFFER_SIZE, fp);
         data_not_read -= read_length;
@@ -35,13 +35,13 @@ datagram *datagram_builder::get_next_datagram() {
             std::string packet_data = std::string(buffer + packet_start_index,
                                                   std::min(read_length, (size_t) PACKET_SIZE));
 
-            datagram_queue.push(new datagram(packet_data));
+            datagram_queue.push(new data_packet(packet_data));
 
             read_length -= PACKET_SIZE;
             packet_start_index += PACKET_SIZE;
         }
     }
-    datagram *next_datagram = datagram_queue.front();
+    data_packet *next_datagram = datagram_queue.front();
     datagram_queue.pop();
     return next_datagram;
 }
