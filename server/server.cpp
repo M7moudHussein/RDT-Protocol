@@ -185,6 +185,7 @@ void server::handle_worker_thread(sockaddr_in client_address, std::string file_p
             exit(EXIT_FAILURE);
     }
 
+    rdt->set_server_socket(server::socket_fd);
     rdt->set_client_address(client_address);
 
     rdt->start();

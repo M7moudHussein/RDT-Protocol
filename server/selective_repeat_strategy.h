@@ -17,12 +17,12 @@ public:
 
     void start() override;
 
+    void send_packet(data_packet *packet);
+
 private:
-    bool initial_pkt = true;
 
     void fill_window();
-
-    void resend_packet();
+    void advance_window();
 
 };
 
