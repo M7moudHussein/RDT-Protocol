@@ -11,7 +11,10 @@
 #include <sstream>
 #include "parser/server_parser.h"
 #include "../shared/ack_packet.h"
+#include "rdt_strategy.h"
+#include "selective_repeat_strategy.h"
 
+#define MAX_UDP_BUFFER_SIZE 65536
 
 server::server(server_parser serv_parser) : MAX_WINDOW_SIZE(serv_parser.get_max_window_size()) {
     server::port_number = serv_parser.get_port_number();
@@ -63,13 +66,13 @@ std::string get_address_string(sockaddr_in address) {
 }
 
 void server::start() {
+    char *buffer = new char[MAX_UDP_BUFFER_SIZE + 1];
     while (true) {
         // Receives client packets
         ssize_t bytes_received;
-        char buffer[1024 + 5];
         struct sockaddr_in client_address;
         socklen_t client_address_len = sizeof client_address;
-        bytes_received = recvfrom(server::socket_fd, (char *) buffer, 1024,
+        bytes_received = recvfrom(server::socket_fd, buffer, MAX_UDP_BUFFER_SIZE,
                                   MSG_WAITALL, (struct sockaddr *) &client_address,
                                   &client_address_len);
         buffer[bytes_received + 1] = '\0'; // Null terminate the buffer
@@ -78,10 +81,11 @@ void server::start() {
         // TODO: Parse message in buffer and form a packet
 
         // Check if client_address is registered or not
-        if (server::registered_clients.find(get_address_string(client_address)) != server::registered_clients.end()) {
+        std::string client_address_string = get_address_string(client_address);
+        if (server::registered_clients.find(client_address_string) != server::registered_clients.end()) {
             // Client already registered, change corresponding bool to true
             server::worker_threads_acks_mtx.lock();
-            server::worker_threads_acks[server::registered_clients[get_address_string(client_address)]] = true;
+            server::worker_threads_acks[server::registered_clients[client_address_string]] = true;
             server::worker_threads_acks_mtx.unlock();
 
             // TODO: Notify corresponding worker thread
@@ -96,7 +100,8 @@ void server::start() {
                    client_address_len);
 
             // Dispatch worker thread
-            server::dispatch_worker_thread(client_address);
+            server::dispatch_worker_thread(client_address,
+                                           ""); //TODO change the  string to the valid file path (relative path)
         }
     }
 }
@@ -112,7 +117,7 @@ void server::cleanup_working_threads() {
                 server::worker_threads_acks.erase(it->first);
                 server::worker_threads_acks_mtx.unlock();
 
-                // Removing entry fron registered clients map (done in O(n) because tid is value not key)
+                // Removing entry from registered clients map (done in O(n) because tid is value not key)
                 server::registered_clients_mtx.lock();
                 for (auto rc_it = server::registered_clients.cbegin();
                      rc_it != server::registered_clients.cend();) {
@@ -133,8 +138,8 @@ void server::cleanup_working_threads() {
     }
 }
 
-void server::dispatch_worker_thread(sockaddr_in client_address) {
-    std::thread *th = new std::thread(&server::handle_worker_thread, this);
+void server::dispatch_worker_thread(sockaddr_in client_address, std::string file_path) {
+    std::thread *th = new std::thread(&server::handle_worker_thread, this, client_address, file_path);
     worker_thread *wrk_th = new worker_thread(th);
 
     server::registered_clients_mtx.lock();
@@ -152,8 +157,31 @@ void server::dispatch_worker_thread(sockaddr_in client_address) {
     wrk_th->detach();
 }
 
-void server::handle_worker_thread() {
+void server::handle_worker_thread(sockaddr_in client_address, std::string file_path) {
+    rdt_strategy *rdt;
+    switch (this->server_mode) {
+        case STOP_AND_WAIT:
+            rdt = new selective_repeat_strategy(file_path, 0);
+            break;
+        case SELECTIVE_REPEAT:
+            rdt = new selective_repeat_strategy(file_path);
+            break;
+        case GO_BACK_N:
+            //TODO to be handled
+            break;
+        default:
+            perror("Invalid mode");
+            exit(EXIT_FAILURE);
+    }
 
+    rdt->set_client_address(client_address);
+
+    rdt->start();
+
+    while (!rdt->is_done()) {
+        //TODO wait on CV to get new ACK
+//        rdt->acknowledge_packet(); //TODO notify the rdt to ack the received packet and do the proper action
+    }
 
     // After all client handling is finished, mark yourself as done to be cleaned up by cleanup thread
     server::finalize_worker_thread();
@@ -163,10 +191,6 @@ void server::finalize_worker_thread() {
     server::working_threads_mtx.lock();
     server::working_threads[std::this_thread::get_id()]->mark_done();
     server::working_threads_mtx.unlock();
-}
-
-void server::set_server_mode(mode server_mode) {
-    this->server_mode = server_mode;
 }
 
 void validate_args(int argc, char **argv) {
