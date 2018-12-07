@@ -7,6 +7,8 @@
 
 #endif
 
+#define HEADER_SIZE 8
+
 void wrap_extra_bits(int *check_sum);
 
 uint16_t calculate_checksum(data_packet packet) {

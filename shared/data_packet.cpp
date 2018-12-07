@@ -7,11 +7,16 @@ data_packet::data_packet(std::string data) {
 }
 
 std::ostream &operator <<(std::ostream &strm, const data_packet &packet) {
-    strm << packet.get_cksum() << "\n";
-    strm << packet.get_len() << "\n";
-    strm << packet.get_seqno() << "\n";
-    strm << packet.get_data() << "\n";
-    strm << std::flush;
+    strm << packet.get_seqno();
+    strm << packet.get_len() << packet.get_cksum();
+    strm << packet.get_data() << std::flush;
+    return strm;
+}
+
+std::istream &operator>>(std::istream &strm, data_packet &packet) {
+    std::string pkt_stream;
+    strm >> pkt_stream;
+    packet.set_seqno(stoi(pkt_stream.substr(0, 16)));
     return strm;
 }
 

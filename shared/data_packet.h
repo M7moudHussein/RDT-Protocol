@@ -24,6 +24,8 @@ public:
 
     friend std::ostream& operator <<(std::ostream &strm, const data_packet &packet);
 
+    friend std::istream& operator >>(std::istream &strm, data_packet &packet);
+
 private:
     uint16_t cksum;
     uint16_t len;

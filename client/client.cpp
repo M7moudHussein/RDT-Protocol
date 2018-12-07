@@ -32,7 +32,7 @@ void client::run() {
 void client::init() {
     /* Creating socket file descriptor */
     if ((socket_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-        perror("socket creation failed");
+        perror("SOCKET CREATION FAILED");
         exit(EXIT_FAILURE);
     }
 
@@ -45,7 +45,7 @@ void client::init() {
 
     /* Binding the client socket fd to an address with the given local port number */
     if (bind(socket_fd, (const struct sockaddr *) &local_addr, sizeof(local_addr)) < 0) {
-        perror("bind failed");
+        perror("BINDING FAILED");
         exit(EXIT_FAILURE);
     }
 
@@ -60,7 +60,7 @@ void client::init() {
 string client::create_req_datagram() {
     string data = parser.get_req_file_name();
     data_packet pkt(data);
-    pkt.set_len(static_cast<uint16_t>(data.length()));
+    pkt.set_len(static_cast<uint16_t>(HEADER_SIZE + data.length()));
     pkt.set_seqno(0);
     pkt.set_cksum(calculate_checksum(pkt)); // last step after setting all headers
     std::stringstream pkt_buffer;
