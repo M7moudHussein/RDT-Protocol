@@ -1,19 +1,41 @@
 #ifndef RDT_PROTOCOL_DATA_GRAM_H
 #define RDT_PROTOCOL_DATA_GRAM_H
 
-#define DATAGRAM_SIZE
 #define PACKET_SIZE 500
 
-class datagram {
-private:
-    uint16_t cksum;
-    uint16_t len;
-    uint32_t seqno;
+using std::string;
 
-    std::string data;
+class datagram {
 public:
-    datagram(std::string data);
+    datagram();
+
+    datagram(string data);
+
+    uint16_t get_checksum();
+
+    void set_checksum(uint16_t);
+
+    uint16_t get_len();
+
+    void set_len(uint16_t);
+
+    uint32_t get_seq_no();
+
+    void set_seq_no(uint32_t);
+
+    string get_data();
+
+    void build(string datagram_buffer);
+
+    std::string to_string();
+
+private:
+    uint16_t checksum;
+    uint16_t len;
+    uint32_t seq_no;
+
+    string data;
 };
 
 
-#endif //RDT_PROTOCOL_DATA_GRAM_H
+#endif
