@@ -17,7 +17,7 @@ server::server(server_parser serv_parser) : MAX_WINDOW_SIZE(serv_parser.get_max_
     server::port_number = serv_parser.get_port_number();
     server::random_seed = serv_parser.get_random_seed();
     server::loss_probability = serv_parser.get_loss_probability();
-    std::cout << "Server listening on port: " << server::port_number <<  std::endl;
+    std::cout << "Server listening on port: " << server::port_number << std::endl;
     server::init();
 }
 
@@ -31,8 +31,7 @@ void server::init() {
 
     int opt = 1;
     if (setsockopt(server::socket_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
-                   &opt, sizeof(opt)))
-    {
+                   &opt, sizeof(opt))) {
         perror("setsockopt");
         exit(EXIT_FAILURE);
     }
@@ -70,7 +69,7 @@ void server::start() {
         char buffer[1024 + 5];
         struct sockaddr_in client_address;
         socklen_t client_address_len = sizeof client_address;
-        bytes_received = recvfrom(server::socket_fd, (char *)buffer, 1024,
+        bytes_received = recvfrom(server::socket_fd, (char *) buffer, 1024,
                                   MSG_WAITALL, (struct sockaddr *) &client_address,
                                   &client_address_len);
         buffer[bytes_received + 1] = '\0'; // Null terminate the buffer
@@ -116,7 +115,7 @@ void server::cleanup_working_threads() {
                 // Removing entry fron registered clients map (done in O(n) because tid is value not key)
                 server::registered_clients_mtx.lock();
                 for (auto rc_it = server::registered_clients.cbegin();
-                        rc_it != server::registered_clients.cend();) {
+                     rc_it != server::registered_clients.cend();) {
                     if (rc_it->second == it->first) {
                         server::registered_clients.erase(rc_it); // delete pointer to it from map
                         break;
@@ -164,6 +163,10 @@ void server::finalize_worker_thread() {
     server::working_threads_mtx.lock();
     server::working_threads[std::this_thread::get_id()]->mark_done();
     server::working_threads_mtx.unlock();
+}
+
+void server::set_server_mode(mode server_mode) {
+    this->server_mode = server_mode;
 }
 
 void validate_args(int argc, char **argv) {

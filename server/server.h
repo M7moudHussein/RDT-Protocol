@@ -27,6 +27,7 @@ private:
     int port_number;
     int random_seed;
     float loss_probability;
+    mode server_mode;
 
     std::map<std::thread::id, worker_thread *> working_threads;
     std::mutex working_threads_mtx;
@@ -48,7 +49,7 @@ public:
     const int MAX_WINDOW_SIZE;
 
     explicit server(server_parser serv_parser);
-    void set_server_mode();
+    void set_server_mode(mode server_mode);
     void start();
 
 
