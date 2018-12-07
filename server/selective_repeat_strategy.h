@@ -17,11 +17,14 @@ public:
 
     void start() override;
 
-    void advance_window() override;
-
 private:
     int window_size;
     std::queue<data_packet *> window;
+    bool initial_pkt = true;
+
+    void fill_window();
+
+    void resend_packet();
 
 };
 
