@@ -24,6 +24,8 @@ private:
 
     void fill_window();
 
+    void resend_packet();
+
 };
 
 

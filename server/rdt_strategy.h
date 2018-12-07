@@ -12,8 +12,6 @@ public:
 
     virtual void start() = 0;
 
-    virtual void resend_packet();
-
     void set_client_address(sockaddr_in client_address);
 
     bool is_done();
@@ -32,10 +30,6 @@ void rdt_strategy::set_client_address(sockaddr_in client_address) {
 
 bool rdt_strategy::is_done() {
     return this->_is_done;
-}
-
-void rdt_strategy::resend_packet() {
-
 }
 
 #endif //RDT_PROTOCOL_RDT_STRATEGY_H

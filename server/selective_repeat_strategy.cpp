@@ -47,3 +47,7 @@ void selective_repeat_strategy::fill_window() {
         window.push(pkt_builder->get_next_packet());
     }
 }
+
+void selective_repeat_strategy::resend_packet() {
+
+}
