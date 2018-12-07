@@ -4,13 +4,13 @@
 
 #include <string>
 #include <queue>
-#include "../../shared/datagram.h"
+#include "../../shared/data_packet.h"
 
 class datagram_builder {
 public:
     datagram_builder(std::string absolute_path, int queue_size);
 
-    datagram *get_next_datagram();
+    data_packet *get_next_datagram();
 
     bool has_next();
 
@@ -18,7 +18,7 @@ private:
     FILE *fp;
     int queue_size;
     size_t data_not_read;
-    std::queue<datagram *> datagram_queue;
+    std::queue<data_packet *> datagram_queue;
     char *buffer;
 
 #define BUFFER_SIZE PACKET_SIZE * queue_size

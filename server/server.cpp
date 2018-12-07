@@ -8,7 +8,9 @@
 #include <iostream>
 #include "server.h"
 #include <unistd.h>
+#include <sstream>
 #include "parser/server_parser.h"
+#include "../shared/ack_packet.h"
 
 
 server::server(server_parser serv_parser) : MAX_WINDOW_SIZE(serv_parser.get_max_window_size()) {
@@ -67,28 +69,32 @@ void server::start() {
         ssize_t bytes_received;
         char buffer[1024 + 5];
         struct sockaddr_in client_address;
-//        memset(&client_address, 0, sizeof(client_address));
         socklen_t client_address_len = sizeof client_address;
         bytes_received = recvfrom(server::socket_fd, (char *)buffer, 1024,
                                   MSG_WAITALL, (struct sockaddr *) &client_address,
                                   &client_address_len);
-        server::registered_clients[get_address_string(client_address)] = std::this_thread::get_id();
         buffer[bytes_received + 1] = '\0'; // Null terminate the buffer
-        std::cout << "New client request: " << buffer << std::endl;
+        std::cout << "Client message received: " << buffer << std::endl;
 
         // Parse message in buffer and form a packet
 
         // Check if client_address is registered or not
+        if (server::registered_clients.find(get_address_string(client_address)) != server::registered_clients.end()) {
+            // Client already registered, notify corresponding worker thread
+        } else {
+            // Acknowledge receiving of request
+            ack_packet ack;
+            std::cout << ack << std::endl;
+            std::stringstream ack_ss;
+            ack_ss << ack;
+            sendto(server::socket_fd, ack_ss.str().c_str(), ack_ss.str().length(),
+                   MSG_CONFIRM, (const struct sockaddr *) &client_address,
+                   client_address_len);
 
-        // Send acknowledge to client for the request
-        char *hello = const_cast<char *>("Request acknowledged from parent to client");
-        sendto(server::socket_fd, (const char *)hello, strlen(hello),
-               MSG_CONFIRM, (const struct sockaddr *) &client_address,
-               client_address_len);
-        printf("Request ACK sent from parent.\n");
+            // Create new worker thread for the client
 
-        // If client is a new client, create a worker thread to handle acks and timers and all
-        // else notify the already created thread that a packet arrived
+            // Add thread to working threads, add client to registered clients, add false ack_received bool in threads_acks
+        }
     }
 }
 
