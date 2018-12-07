@@ -1,9 +1,13 @@
+#include <utility>
+
 #include "packet_builder.h"
 #include <sys/stat.h>
 #include <algorithm>
+#include <zconf.h>
 
-packet_builder::packet_builder(std::string absolute_path, int queue_size) {
+packet_builder::packet_builder(std::string relative_path, int queue_size) {
     struct stat statbuf;
+    std::string absolute_path = get_absolute_path(std::move(relative_path));
     if (stat(absolute_path.c_str(), &statbuf) == -1) {
         //TODO handle error
     }
@@ -48,4 +52,11 @@ data_packet *packet_builder::get_next_packet() {
 
 bool packet_builder::has_next() {
     return data_not_read > 0;
+}
+
+std::string packet_builder::get_absolute_path(std::string relative_path) {
+    int const max_path_length = 200;
+    char cwd[max_path_length];
+    getcwd(cwd, sizeof(cwd));
+    return std::string(cwd) + relative_path;
 }
