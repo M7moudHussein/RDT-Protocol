@@ -21,10 +21,12 @@ void selective_repeat_strategy::acknowledge_packet(ack_packet ack_pkt) {
 }
 
 void selective_repeat_strategy::start() {
+
+
 }
 
 void selective_repeat_strategy::advance_window() {
-    for(int i = 0; i < window_size && pkt_builder->has_next(); i++){
+    for (int i = 0; i < window_size && pkt_builder->has_next(); i++) {
         window.push(pkt_builder->get_next_packet());
     }
 }

@@ -12,8 +12,10 @@
 #include <thread>
 #include <mutex>
 #include <map>
+#include <set>
 #include "parser/server_parser.h"
 #include "worker_thread.h"
+#include "../shared/data_packet.h"
 
 class server {
 private:
@@ -38,6 +40,8 @@ private:
     std::map<std::thread::id, bool> worker_threads_acks;
     std::mutex worker_threads_acks_mtx;
 
+    std::set<data_packet *, data_packet::time_comparator> unacked_packets;
+
 
     void dispatch_worker_thread(sockaddr_in client_address, std::string file_path);
 
@@ -49,8 +53,12 @@ private:
 
     void init();
 
+    void resend_packet();
+
 public:
     const int MAX_WINDOW_SIZE;
+
+    const int PACKET_TIME_OUT = 5; // time out assumed
 
     explicit server(server_parser serv_parser);
 
