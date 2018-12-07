@@ -9,6 +9,7 @@ private:
     uint16_t cksum;
     uint16_t len;
     uint32_t seqno;
+    uint32_t ackno;
 
     std::string data;
 public:
