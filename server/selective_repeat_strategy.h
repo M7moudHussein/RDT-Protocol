@@ -16,10 +16,11 @@ public:
     void acknowledge_packet(ack_packet ack_pkt) override;
 
     void start() override;
-
+    void advance_window() override;
 private:
     int window_size;
     std::queue<data_packet *> window;
+
 };
 
 
