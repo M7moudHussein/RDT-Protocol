@@ -18,8 +18,6 @@ public:
     void start() override;
 
 private:
-    int window_size;
-    std::queue<data_packet *> window;
     bool initial_pkt = true;
 
     void fill_window();

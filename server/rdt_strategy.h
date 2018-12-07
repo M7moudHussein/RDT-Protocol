@@ -22,6 +22,9 @@ protected:
     bool _is_done;
     timer_thread *timer;
     const std::chrono::seconds PACKET_TIME_OUT = std::chrono::seconds(5); // assumed time out to be 5 seconds
+    std::set<data_packet *, data_packet::time_comparator> unacked_packets;
+    std::queue<data_packet *> window;
+    int window_size;
 };
 
 void rdt_strategy::set_client_address(sockaddr_in client_address) {

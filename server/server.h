@@ -39,9 +39,6 @@ private:
     std::map<std::thread::id, bool> worker_threads_acks;
     std::mutex worker_threads_acks_mtx;
 
-    std::set<data_packet *, data_packet::time_comparator> unacked_packets;
-
-
     void dispatch_worker_thread(sockaddr_in client_address, std::string file_path);
 
     void handle_worker_thread(sockaddr_in client_address, std::string file_path);

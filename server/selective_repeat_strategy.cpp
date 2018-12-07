@@ -18,10 +18,14 @@ selective_repeat_strategy::selective_repeat_strategy(std::string file_name) {
 void selective_repeat_strategy::acknowledge_packet(ack_packet ack_pkt) {
     // when ack received pop packet from window queue.
 
-    //after ack advance window.
-    window.pop();
-    if(pkt_builder->has_next())
-        window.push(pkt_builder->get_next_packet());
+    //after ack advance window. if first one is acked otherwise find acked packet and set it to true ( Acked )
+
+
+//    window.pop();
+//    if(pkt_builder->has_next())
+//        window.push(pkt_builder->get_next_packet());
+
+
 
 }
 

@@ -161,7 +161,6 @@ void server::dispatch_worker_thread(sockaddr_in client_address, std::string file
 
 void server::handle_worker_thread(sockaddr_in client_address, std::string file_path) {
     rdt_strategy *rdt;
-
     switch (this->server_mode) {
         case STOP_AND_WAIT:
             rdt = new selective_repeat_strategy(file_path, 0);
