@@ -17,9 +17,12 @@ public:
 
     void start() override;
 
+    void advance_window() override;
+
 private:
     int window_size;
     std::queue<data_packet *> window;
+
 };
 
 

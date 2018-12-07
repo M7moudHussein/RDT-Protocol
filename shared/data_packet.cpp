@@ -42,3 +42,7 @@ void data_packet::set_seqno(uint32_t seqno) {
 const std::string &data_packet::get_data() const {
     return data;
 }
+
+std::time_t data_packet::get_time_stamp() const {
+    return this->time_stamp;
+}
