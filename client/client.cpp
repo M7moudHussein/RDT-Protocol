@@ -69,6 +69,8 @@ string client::create_req_datagram() {
 }
 
 void client::receive_datagrams() {
+    uint32_t seq_no = 0;
+    uint32_t n = 2;
 
 }
 

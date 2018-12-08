@@ -25,11 +25,13 @@ public:
 
     const std::string &get_data() const;
 
+    std::string pack();
+
+    void unpack(std::string);
+
     std::chrono::steady_clock::time_point get_time_stamp() const;
 
     friend std::ostream& operator <<(std::ostream &strm, const data_packet &packet);
-
-    friend std::istream& operator >>(std::istream &strm, data_packet &packet);
 
     static struct time_comparator {
         bool operator()(const data_packet &lhs, const data_packet &rhs) {

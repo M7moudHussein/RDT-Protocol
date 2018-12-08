@@ -1,7 +1,3 @@
-//
-// Created by awalid on 12/7/18.
-//
-
 #ifndef RDT_PROTOCOL_ACK_PACKET_H
 #define RDT_PROTOCOL_ACK_PACKET_H
 
@@ -18,6 +14,10 @@ public:
 
     uint32_t get_ackno() const;
 
+    std::string pack();
+
+    void unpack(std::string);
+
     friend std::ostream &operator<<(std::ostream &strm, const ack_packet &packet);
 
 private:
@@ -26,4 +26,4 @@ private:
 };
 
 
-#endif //RDT_PROTOCOL_ACK_PACKET_H
+#endif
