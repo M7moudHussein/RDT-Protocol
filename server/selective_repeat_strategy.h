@@ -17,13 +17,10 @@ public:
 
     void start() override;
 
-    void send_packet(data_packet *packet);
-
 private:
+    void send_packet(data_packet *packet) override;
 
-    void fill_window();
-    void advance_window();
-
+    void handle_time_out() override;
 };
 
 

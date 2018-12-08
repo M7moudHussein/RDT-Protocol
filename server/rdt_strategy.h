@@ -20,11 +20,16 @@ public:
 
     bool is_done();
 
-    void handle_time_out();
+
+protected:
+    void fill_window();
+
+    void advance_window();
+
+    virtual void handle_time_out() = 0;
 
     virtual void send_packet(data_packet *packet) = 0;
 
-protected:
     packet_builder *pkt_builder;
     sockaddr_in client_address;
     int server_socket;
@@ -41,27 +46,25 @@ void rdt_strategy::set_client_address(sockaddr_in client_address) {
 }
 
 bool rdt_strategy::is_done() {
-    return this->window.size() == 0;
-}
-
-void rdt_strategy::handle_time_out() {
-    while (true) {
-        set_mutex.lock();
-        data_packet *first_unacked_pkt = *(unacked_packets.begin());
-        set_mutex.unlock();
-        if (first_unacked_pkt->get_time_stamp() + PACKET_TIME_OUT < std::chrono::steady_clock::now())
-            timer->sleep_until(first_unacked_pkt->get_time_stamp() + PACKET_TIME_OUT);
-        else{
-            set_mutex.lock();
-            unacked_packets.erase(first_unacked_pkt);
-            rdt_strategy::send_packet(first_unacked_pkt); //TODO check rdt::send_pkt implemented in child class
-
-        }
-    }
+    return this->window.empty();
 }
 
 void rdt_strategy::set_server_socket(int server_socket) {
     this->server_socket = server_socket;
+}
+
+void rdt_strategy::advance_window() {
+    for (auto it = window.begin(); it != window.end() && (*it)->is_acked(); it++) {
+        window.pop_front();
+        if (pkt_builder->has_next())
+            window.push_back(pkt_builder->get_next_packet());
+    }
+}
+
+void rdt_strategy::fill_window() {
+    while (window.size() < window_size && pkt_builder->has_next()) {
+        window.push_back(pkt_builder->get_next_packet());
+    }
 }
 
 #endif //RDT_PROTOCOL_RDT_STRATEGY_H

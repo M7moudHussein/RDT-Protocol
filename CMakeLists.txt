@@ -12,7 +12,11 @@ set(SERVER_SOURCE_FILES
         server/worker_thread.h
         server/rdt_strategy.h
         server/selective_repeat_strategy.h
-        server/selective_repeat_strategy.cpp server/timer_thread.cpp server/timer_thread.h)
+        server/selective_repeat_strategy.cpp
+        server/go_back_N_strategy.h
+        server/go_back_N_strategy.cpp
+        server/timer_thread.cpp
+        server/timer_thread.h)
 
 set(CLIENT_SOURCE_FILES
         client/parser/client_parser.cpp

@@ -10,7 +10,7 @@
 #include <sstream>
 #include "rdt_strategy.h"
 #include "selective_repeat_strategy.h"
-#include "timer_thread.h"
+#include "go_back_N_strategy.h"
 
 #define MAX_UDP_BUFFER_SIZE 65536
 
@@ -167,7 +167,7 @@ void server::handle_worker_thread(sockaddr_in client_address, std::string file_p
             rdt = new selective_repeat_strategy(file_path);
             break;
         case GO_BACK_N:
-            //TODO to be handled
+            rdt = new go_back_N_strategy(file_path);
             break;
         default:
             perror("Invalid mode");

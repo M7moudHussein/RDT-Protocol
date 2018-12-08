@@ -1,6 +1,6 @@
 #include "ack_packet.h"
 
-std::ostream &operator <<(std::ostream &strm, const ack_packet &packet) {
+std::ostream &operator<<(std::ostream &strm, const ack_packet &packet) {
     strm << packet.get_cksum() << "\n";
     strm << packet.get_len() << "\n";
     strm << packet.get_ackno() << "\n";
@@ -40,7 +40,7 @@ std::string ack_packet::pack() {
     buf[7] = (cksum >> 8) & 0xFF;
 
     std::string pkt = std::string(buf, len);
-    delete(buf);
+    delete[]buf;
     return pkt;
 }
 

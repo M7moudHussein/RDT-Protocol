@@ -31,7 +31,7 @@ void selective_repeat_strategy::acknowledge_packet(ack_packet ack_pkt) {
                 unacked_packets.erase((*it));
                 set_mutex.unlock();
                 if (it == window.begin())
-                    selective_repeat_strategy::advance_window();
+                    rdt_strategy::advance_window();
             }
             break;
         }
@@ -51,9 +51,19 @@ void selective_repeat_strategy::start() {
 
 }
 
-void selective_repeat_strategy::fill_window() {
-    for (int i = 0; i < window_size && pkt_builder->has_next(); i++) {
-        window.push_back(pkt_builder->get_next_packet());
+void selective_repeat_strategy::handle_time_out() {
+    while (true) {
+        set_mutex.lock();
+        data_packet *first_unacked_pkt = *(unacked_packets.begin());
+        set_mutex.unlock();
+        if (first_unacked_pkt->get_time_stamp() + PACKET_TIME_OUT < std::chrono::steady_clock::now())
+            timer->sleep_until(first_unacked_pkt->get_time_stamp() + PACKET_TIME_OUT);
+        else {
+            set_mutex.lock();
+            unacked_packets.erase(first_unacked_pkt);
+            set_mutex.unlock();
+            selective_repeat_strategy::send_packet(first_unacked_pkt);
+        }
     }
 }
 
@@ -67,12 +77,4 @@ void selective_repeat_strategy::send_packet(data_packet *packet) {
     set_mutex.lock();
     unacked_packets.insert(packet);
     set_mutex.unlock();
-}
-
-void selective_repeat_strategy::advance_window() {
-    for (auto it = window.begin(); it != window.end() && (*it)->is_acked(); it++) {
-        window.pop_front();
-        if (pkt_builder->has_next())
-            window.push_back(pkt_builder->get_next_packet());
-    }
 }

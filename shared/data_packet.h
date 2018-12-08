@@ -4,7 +4,6 @@
 #include <ctime>
 #include <chrono>
 
-#define DATAGRAM_SIZE
 #define PACKET_SIZE 500
 
 class data_packet {
@@ -40,7 +39,7 @@ public:
     friend std::ostream &operator<<(std::ostream &strm, const data_packet &packet);
 
     static struct time_comparator {
-        bool operator()(const data_packet &lhs, const data_packet &rhs) {
+        bool operator()(const data_packet &lhs, const data_packet &rhs) const {
             return lhs.get_time_stamp() < rhs.get_time_stamp();
         }
     };
