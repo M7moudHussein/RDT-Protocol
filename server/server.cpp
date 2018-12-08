@@ -74,6 +74,7 @@ void server::start() {
                                   MSG_WAITALL, (struct sockaddr *) &client_address,
                                   &client_address_len);
         buffer[bytes_received + 1] = '\0'; // Null terminate the buffer
+        std::cout << bytes_received << std::endl;
         std::cout << "Client message received: " << buffer << std::endl;
 
         // TODO: Parse message in buffer and form a packet
@@ -97,10 +98,11 @@ void server::start() {
             std::cout << ack << std::endl;
             std::stringstream ack_ss;
             ack_ss << ack;
+            std::cout << "Printing ack" << ack_ss.str() << std::endl;
             sendto(server::socket_fd, ack_ss.str().c_str(), ack_ss.str().length(),
                    MSG_CONFIRM, (const struct sockaddr *) &client_address,
                    client_address_len);
-
+            exit(EXIT_SUCCESS);
             // Dispatch worker thread
             server::dispatch_worker_thread(client_address,
                                            ""); //TODO change the string to the valid file path (relative path)

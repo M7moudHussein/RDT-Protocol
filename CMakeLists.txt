@@ -30,7 +30,7 @@ set(SHARED_SOURCE_FILES
         shared/ack_packet.h
         shared/packet_util.h
         server/filereader/packet_builder.h
-        server/filereader/packet_builder.cpp)
+        server/filereader/packet_builder.cpp shared/packet_util.cpp)
 
 add_executable(server ${SHARED_SOURCE_FILES} ${SERVER_SOURCE_FILES})
 add_executable(client ${SHARED_SOURCE_FILES} ${CLIENT_SOURCE_FILES})

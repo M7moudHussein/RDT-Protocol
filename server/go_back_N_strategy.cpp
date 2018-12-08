@@ -20,7 +20,7 @@ void go_back_N_strategy::start() {
         (*it)->set_time_stamp(std::chrono::steady_clock::now());
 
         if (it == window.begin()) {
-            timer = new timer_thread(new std::thread(&go_back_N_strategy::handle_time_out));
+            timer = new timer_thread(new std::thread(&go_back_N_strategy::handle_time_out, this));
         }
     }
 }

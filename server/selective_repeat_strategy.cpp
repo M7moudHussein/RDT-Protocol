@@ -44,7 +44,7 @@ void selective_repeat_strategy::start() {
         selective_repeat_strategy::send_packet(*it);
         if (it == window.begin()) {
             //initialize timer thread then sleep it till timeout of 1st unacked packet
-            std::thread *th = new std::thread(&selective_repeat_strategy::handle_time_out,this);
+            std::thread *th = new std::thread(&selective_repeat_strategy::handle_time_out, this);
             timer = new timer_thread(th);
         }
         it++;

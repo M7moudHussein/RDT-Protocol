@@ -9,6 +9,11 @@ data_packet::data_packet(std::string data) {
 }
 
 std::ostream &operator<<(std::ostream &strm, const data_packet &packet) {
+    strm << packet.get_cksum();
+    strm << packet.get_len();
+    strm << packet.get_seqno();
+    strm << packet.get_data();
+    strm << std::flush;
     return strm;
 }
 

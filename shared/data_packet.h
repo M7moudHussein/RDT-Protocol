@@ -38,11 +38,11 @@ public:
 
     friend std::ostream &operator<<(std::ostream &strm, const data_packet &packet);
 
-    struct time_comparator {
-        bool operator()(const data_packet &lhs, const data_packet &rhs) const {
-            return lhs.get_time_stamp() < rhs.get_time_stamp();
-        }
-    };
+//    struct time_comparator {
+//        bool operator()(const data_packet &lhs, const data_packet &rhs) const {
+//            return lhs.get_time_stamp() < rhs.get_time_stamp();
+//        }
+//    };
 
 private:
     uint16_t cksum;
