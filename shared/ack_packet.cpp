@@ -54,3 +54,4 @@ void ack_packet::unpack(std::string buf) {
     uint16_t y0 = buf[6], y1 = buf[7];
     cksum = y0 | (y1 << 8);
 }
+

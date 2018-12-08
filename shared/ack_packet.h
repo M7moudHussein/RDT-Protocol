@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <ostream>
+#include <chrono>
 
 class ack_packet {
 public:
@@ -20,9 +21,14 @@ public:
 
     friend std::ostream &operator<<(std::ostream &strm, const ack_packet &packet);
 
+    std::chrono::steady_clock::time_point get_time_stamp() const;
+
+    void set_time_stamp(std::chrono::steady_clock::time_point time_stamp);
+
 private:
     uint16_t cksum, len;
     uint32_t ackno;
+
 };
 
 

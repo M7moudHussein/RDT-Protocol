@@ -14,17 +14,18 @@ client::client(string args_file_path) : parser(args_file_path) {
 
 void client::run() {
     /* Creating request datagram */
-    string req_datagram_buffer = create_req_datagram();
+    req_datagram_buffer = create_req_datagram();
 
-     /* Sending request to server */
+    /* Sending request to server */
     sendto(socket_fd, req_datagram_buffer.c_str(), req_datagram_buffer.length(),
            0, (const struct sockaddr *) &server_addr, sizeof(server_addr));
 
-    /* Waiting for ACK should go here*/
+    /* Waiting for ACK and resending req datagram*/
+    handle_ack_timeout();
 
     /* Waiting for new datagrams */
     receive_datagrams();
-    
+
     /* Closing client socket */
     close(socket_fd);
 }
@@ -55,6 +56,9 @@ void client::init() {
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = inet_addr(parser.get_server_ip().c_str());
     server_addr.sin_port = htons(parser.get_server_port_no());
+
+    /*init ack pkt for file request */
+    ack_pkt = new ack_packet();
 }
 
 string client::create_req_datagram() {
@@ -72,6 +76,37 @@ void client::receive_datagrams() {
     uint32_t seq_no = 0;
     uint32_t n = 2;
 
+}
+
+void client::handle_ack_timeout() {
+    // while ack not received try resending request again
+    while (true) {
+        fd_set rfds;
+        struct timeval tv;
+        int retval;
+        /* Watch stdin (fd 0) to see when it has input. */
+        FD_ZERO(&rfds);
+        FD_SET(0, &rfds);
+        /* Wait up to five seconds for ACK to arrive. */
+        tv.tv_sec = 5;
+        tv.tv_usec = 0;
+
+        retval = select(1, &rfds, NULL, NULL, &tv);
+
+        if (retval == -1)
+            perror("select()");
+        else if (retval){
+            printf("ACK for file request received ! \n");
+            /* FD_ISSET(0, &rfds) will be true. */
+            break;
+        }
+        else {
+            printf("No ACK received within five seconds..... request packet resending\n");
+            /* Resending request to server */
+            sendto(socket_fd, req_datagram_buffer.c_str(), req_datagram_buffer.length(),
+                   0, (const struct sockaddr *) &server_addr, sizeof(server_addr));
+        }
+    }
 }
 
 
