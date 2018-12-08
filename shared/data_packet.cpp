@@ -8,7 +8,7 @@ data_packet::data_packet(std::string data) {
     this->data = data;
 }
 
-std::ostream &operator <<(std::ostream &strm, const data_packet &packet) {
+std::ostream &operator<<(std::ostream &strm, const data_packet &packet) {
     return strm;
 }
 
@@ -54,11 +54,11 @@ std::string data_packet::pack() {
     buf[6] = cksum & 0xFF;
     buf[7] = (cksum >> 8) & 0xFF;
 
-    for (int i = 0,j = 8; i < data.length(); i++, j++)
+    for (int i = 0, j = 8; i < data.length(); i++, j++)
         buf[j] = data[i];
 
     std::string pkt = std::string(buf, len);
-    delete(buf);
+    delete (buf);
     return pkt;
 }
 
@@ -79,3 +79,14 @@ std::chrono::steady_clock::time_point data_packet::get_time_stamp() const {
     return this->time_stamp;
 }
 
+void data_packet::set_time_stamp(std::chrono::steady_clock::time_point time_stamp) {
+    this->time_stamp = time_stamp;
+}
+
+void data_packet::ack() {
+    acked = true;
+}
+
+bool data_packet::is_acked() {
+    return acked;
+}

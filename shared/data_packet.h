@@ -31,7 +31,13 @@ public:
 
     std::chrono::steady_clock::time_point get_time_stamp() const;
 
-    friend std::ostream& operator <<(std::ostream &strm, const data_packet &packet);
+    void ack();
+
+    bool is_acked();
+
+    void set_time_stamp(std::chrono::steady_clock::time_point time_stamp);
+
+    friend std::ostream &operator<<(std::ostream &strm, const data_packet &packet);
 
     static struct time_comparator {
         bool operator()(const data_packet &lhs, const data_packet &rhs) {
@@ -43,6 +49,7 @@ private:
     uint16_t cksum;
     uint16_t len;
     uint32_t seqno;
+    bool acked = false;
     std::chrono::steady_clock::time_point time_stamp;
 
     std::string data;
