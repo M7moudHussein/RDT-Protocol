@@ -4,7 +4,7 @@
 #include <ctime>
 #include <chrono>
 #include "string"
-#define PACKET_SIZE 500
+#define PACKET_DATA_SIZE 500
 
 class data_packet {
 public:

@@ -12,7 +12,7 @@ class go_back_N_strategy : public rdt_strategy {
 public:
     go_back_N_strategy(std::string file_name);
 
-    void acknowledge_packet(ack_packet ack_pkt) override;
+    void acknowledge_packet(ack_packet &ack_pkt) override;
 
     void start() override;
 

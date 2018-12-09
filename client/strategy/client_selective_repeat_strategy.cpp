@@ -2,6 +2,7 @@
 // Created by awalid on 12/8/18.
 //
 
+#include <iostream>
 #include "client_selective_repeat_strategy.h"
 
 client_selective_repeat_strategy::client_selective_repeat_strategy(int window_size) {
@@ -16,6 +17,8 @@ void client_selective_repeat_strategy::run() {
     ssize_t bytes_received = recvfrom(client_socket, buffer, BUF_SIZE,
                               MSG_WAITALL, (struct sockaddr *) &server_address,
                               &serv_add_len);
+    std::cout << buffer << std::endl;
+    exit(EXIT_SUCCESS);
     // TODO: Chunking to receive data from socket
     // Assume buffer now has only 1 data packet
 

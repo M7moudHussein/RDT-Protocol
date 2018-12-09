@@ -1,4 +1,5 @@
 #include <utility>
+#include <iostream>
 
 //
 // Created by mahmoud on 12/7/18.
@@ -16,13 +17,15 @@ selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int 
 }
 
 selective_repeat_strategy::selective_repeat_strategy(std::string file_name) {
-    selective_repeat_strategy::pkt_builder = new packet_builder(std::move(file_name), window_size);
+    selective_repeat_strategy::window_size = DEFAULT_WINDOW_SIZE;
+    selective_repeat_strategy::pkt_builder = new packet_builder(std::move(file_name), DEFAULT_WINDOW_SIZE);
     selective_repeat_strategy::next_seq_number = 0;
     selective_repeat_strategy::window_size = DEFAULT_WINDOW_SIZE;
     fill_window();
 }
 
 void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
+    std::cout << ack_pkt.get_ackno() << " " << ack_pkt.get_len() << " " << ack_pkt.get_cksum() << std::endl;
     auto it = window.begin();
     while (it != window.end()) {
         if (ack_pkt.get_ackno() == (*it)->get_seqno()) {

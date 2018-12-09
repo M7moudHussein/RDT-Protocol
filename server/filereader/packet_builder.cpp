@@ -32,7 +32,7 @@ data_packet *packet_builder::get_next_packet(int &next_seq_num) {
         if (data_not_read <= 0) {
             fclose(fp);
             delete[] buffer;
-            delete fp;
+//            delete fp;
         } else if (read_length == -1) {
             //TODO handle error
             exit(EXIT_FAILURE);
@@ -41,12 +41,16 @@ data_packet *packet_builder::get_next_packet(int &next_seq_num) {
         size_t packet_start_index = 0;
         while (read_length > 0) {
             std::string packet_data = std::string(buffer + packet_start_index,
-                                                  std::min(read_length, (size_t) PACKET_SIZE));
+                                                  std::min(read_length, (size_t) PACKET_DATA_SIZE));
 
             packets_read_queue.push(new data_packet(packet_data, static_cast<uint32_t>(next_seq_num)));
             next_seq_num++;
-            read_length -= PACKET_SIZE;
-            packet_start_index += PACKET_SIZE;
+            if (PACKET_DATA_SIZE < read_length) {
+                read_length -= PACKET_DATA_SIZE;
+            } else {
+                read_length = 0;
+            }
+            packet_start_index += PACKET_DATA_SIZE;
         }
     }
     data_packet *next_packet = packets_read_queue.front();

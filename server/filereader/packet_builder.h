@@ -23,7 +23,7 @@ private:
     std::queue<data_packet *> packets_read_queue;
     char *buffer;
 
-#define BUFFER_SIZE PACKET_SIZE * queue_size
+#define BUFFER_SIZE PACKET_DATA_SIZE * queue_size
 };
 
 

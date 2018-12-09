@@ -49,7 +49,7 @@ void go_back_N_strategy::handle_time_out() {
     }
 }
 
-void go_back_N_strategy::acknowledge_packet(ack_packet ack_pkt) {
+void go_back_N_strategy::acknowledge_packet(ack_packet &ack_pkt) {
     auto it = window.begin();
     while (it != window.end()) {
         if (ack_pkt.get_ackno() == (*it)->get_seqno()) {
@@ -68,9 +68,7 @@ void go_back_N_strategy::acknowledge_packet(ack_packet ack_pkt) {
 }
 
 void go_back_N_strategy::send_packet(data_packet *packet) {
-    std::stringstream pkt_ss;
-    pkt_ss << packet;
-    sendto(server_socket, pkt_ss.str().c_str(), pkt_ss.str().length(),
+    sendto(server_socket, packet->pack().c_str(), packet->pack().length(),
            MSG_CONFIRM, (const struct sockaddr *) &client_address,
            sizeof client_address);
     set_mutex.lock();
