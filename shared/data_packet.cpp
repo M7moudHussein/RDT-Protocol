@@ -1,12 +1,18 @@
 #include <string>
 #include <iostream>
 #include <cstring>
+#include <utility>
 #include "data_packet.h"
 #include "packet_util.h"
 
 data_packet::data_packet(std::string data) {
-    this->data = data;
+    this->data = std::move(data);
 }
+
+data_packet::data_packet(char buffer[], int buf_len) {
+    data_packet::unpack(std::string(buffer, buf_len));
+}
+
 
 std::ostream &operator<<(std::ostream &strm, const data_packet &packet) {
     strm << packet.get_cksum();
@@ -46,7 +52,7 @@ const std::string &data_packet::get_data() const {
 }
 
 std::string data_packet::pack() {
-    char *buf = new char[len];
+    char buf[len];
 
     buf[0] = seqno & 0xFF;
     buf[1] = (seqno >> 8) & 0xFF;
@@ -63,7 +69,6 @@ std::string data_packet::pack() {
         buf[j] = data[i];
 
     std::string pkt = std::string(buf, len);
-    delete (buf);
     return pkt;
 }
 
@@ -76,7 +81,6 @@ void data_packet::unpack(std::string buf) {
 
     uint16_t y0 = buf[6], y1 = buf[7];
     cksum = y0 | (y1 << 8);
-
     data = buf.substr(8, len - HEADER_SIZE);
 }
 

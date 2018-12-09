@@ -20,9 +20,7 @@ void client::run() {
     req_datagram_buffer = create_req_datagram();
 
     /* Sending request to server */
-    std::cout << "Req datagram: " << req_datagram_buffer << std::endl;
-    std::string hello = std::string("my_file.txt");
-    sendto(socket_fd, hello.c_str(), hello.length(),
+    sendto(socket_fd, req_datagram_buffer.c_str(), req_datagram_buffer.length(),
            MSG_CONFIRM, (const struct sockaddr *) &server_addr, sizeof(server_addr));
 
     /* Waiting for ACK and resending req datagram*/
@@ -71,13 +69,9 @@ string client::create_req_datagram() {
     std::cout << "Data here fams: " << data << std::endl;
     data_packet *pkt = new data_packet(data);
     pkt->set_len(static_cast<uint16_t>(HEADER_SIZE + data.length()));
-    pkt->set_seqno(0);
+    pkt->set_seqno(static_cast<uint32_t>(0));
     pkt->set_cksum(packet_util::calculate_checksum(pkt)); // last step after setting all headers
     return pkt->pack();
-//    std::stringstream pkt_buffer;
-//    pkt_buffer << pkt;
-//    std::cout << pkt_buffer.str() << std::endl;
-//    return pkt_buffer.str();
 }
 
 void client::receive_datagrams() {

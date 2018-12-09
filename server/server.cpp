@@ -64,18 +64,19 @@ std::string get_address_string(sockaddr_in address) {
 }
 
 void server::start() {
-    char *buffer = new char[MAX_UDP_BUFFER_SIZE + 1];
+    char buffer[MAX_UDP_BUFFER_SIZE + 1];
     while (true) {
         // Receives client packets
         ssize_t bytes_received;
-        struct sockaddr_in client_address;
+        struct sockaddr_in client_address{};
         socklen_t client_address_len = sizeof client_address;
         bytes_received = recvfrom(server::socket_fd, buffer, MAX_UDP_BUFFER_SIZE,
                                   MSG_WAITALL, (struct sockaddr *) &client_address,
                                   &client_address_len);
-        buffer[bytes_received + 1] = '\0'; // Null terminate the buffer
         std::cout << bytes_received << std::endl;
-        std::cout << "Client message received: " << buffer << std::endl;
+        data_packet request = data_packet(buffer, static_cast<int>(bytes_received));
+        std::cout << "Client message received: " << std::endl;
+        std::cout << request.get_seqno() << " " << request.get_cksum() << " " << request.get_data() << " " << request.get_len() << std::endl;
 
         // TODO: Parse message in buffer and form a packet
 

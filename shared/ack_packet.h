@@ -11,6 +11,7 @@ class ack_packet {
 public:
     ack_packet();
     ack_packet(uint32_t ackno);
+    ack_packet(char buffer[]);
 
     uint16_t get_cksum() const;
 

@@ -8,7 +8,8 @@
 
 class data_packet {
 public:
-    data_packet(std::string data);
+    explicit data_packet(std::string data);
+    data_packet(char buffer[], int buf_len);
 
     uint16_t get_cksum() const;
 

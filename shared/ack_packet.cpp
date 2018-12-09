@@ -1,3 +1,4 @@
+#include <iostream>
 #include "ack_packet.h"
 #include "packet_util.h"
 
@@ -12,9 +13,13 @@ std::ostream &operator<<(std::ostream &strm, const ack_packet &packet) {
 ack_packet::ack_packet() {
     len = ACK_PKT_LEN;
     ackno = 0;
-    cksum;
+    cksum = packet_util::calculate_checksum(this);
 }
 
+
+ack_packet::ack_packet(char buffer[]) {
+    ack_packet::unpack(std::string(buffer, ACK_PKT_LEN));
+}
 
 ack_packet::ack_packet(uint32_t ackno) {
     ack_packet::len = ACK_PKT_LEN;
@@ -35,7 +40,7 @@ uint32_t ack_packet::get_ackno() const {
 }
 
 std::string ack_packet::pack() {
-    char *buf = new char[len];
+    char buf[len];
 
     buf[0] = ackno & 0xFF;
     buf[1] = (ackno >> 8) & 0xFF;
@@ -47,9 +52,7 @@ std::string ack_packet::pack() {
 
     buf[6] = cksum & 0xFF;
     buf[7] = (cksum >> 8) & 0xFF;
-
     std::string pkt = std::string(buf, len);
-    delete[]buf;
     return pkt;
 }
 
