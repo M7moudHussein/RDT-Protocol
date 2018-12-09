@@ -16,14 +16,25 @@ public:
     void run();
 
 private:
+    enum mode {
+        STOP_AND_WAIT,
+        SELECTIVE_REPEAT,
+        GO_BACK_N
+    };
+
     client_parser parser;
     int socket_fd;
     struct sockaddr_in local_addr;
     struct sockaddr_in server_addr;
-
     string req_datagram_buffer;
-
     ack_packet *ack_pkt;
+    mode client_mode;
+public:
+    mode get_client_mode() const;
+
+    void set_client_mode(mode client_mode);
+
+private:
 
     void init();
 

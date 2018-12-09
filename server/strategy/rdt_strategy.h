@@ -4,9 +4,9 @@
 #include <netinet/in.h>
 #include <thread>
 #include <sstream>
-#include "../shared/ack_packet.h"
-#include "filereader/packet_builder.h"
-#include "timer_thread.h"
+#include "../../shared/ack_packet.h"
+#include "../filereader/packet_builder.h"
+#include "../timer_thread.h"
 
 class rdt_strategy {
 public:

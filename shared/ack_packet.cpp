@@ -1,4 +1,5 @@
 #include "ack_packet.h"
+#include "packet_util.h"
 
 std::ostream &operator<<(std::ostream &strm, const ack_packet &packet) {
     strm << packet.get_cksum();
@@ -9,8 +10,16 @@ std::ostream &operator<<(std::ostream &strm, const ack_packet &packet) {
 }
 
 ack_packet::ack_packet() {
-    cksum = len = 0;
+    len = ACK_PKT_LEN;
     ackno = 0;
+    cksum;
+}
+
+
+ack_packet::ack_packet(uint32_t ackno) {
+    ack_packet::len = ACK_PKT_LEN;
+    ack_packet::ackno = ackno;
+    ack_packet::cksum = packet_util::calculate_checksum(this);
 }
 
 uint16_t ack_packet::get_cksum() const {
@@ -54,4 +63,3 @@ void ack_packet::unpack(std::string buf) {
     uint16_t y0 = buf[6], y1 = buf[7];
     cksum = y0 | (y1 << 8);
 }
-

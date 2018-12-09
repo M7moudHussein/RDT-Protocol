@@ -7,6 +7,9 @@
 #include "parser/client_parser.h"
 #include "../shared/packet_util.h"
 #include "../shared/data_packet.h"
+#include "strategy/client_rdt_strategy.h"
+#include "strategy/client_go_back_N_strategy.h"
+#include "strategy/client_selective_repeat_strategy.h"
 
 client::client(string args_file_path) : parser(args_file_path) {
     init();
@@ -66,11 +69,11 @@ void client::init() {
 string client::create_req_datagram() {
     string data = parser.get_req_file_name();
     std::cout << "Data here fams: " << data << std::endl;
-    data_packet pkt(data);
-    pkt.set_len(static_cast<uint16_t>(HEADER_SIZE + data.length()));
-    pkt.set_seqno(0);
-    pkt.set_cksum(calculate_checksum(pkt)); // last step after setting all headers
-    return pkt.pack();
+    data_packet *pkt = new data_packet(data);
+    pkt->set_len(static_cast<uint16_t>(HEADER_SIZE + data.length()));
+    pkt->set_seqno(0);
+    pkt->set_cksum(packet_util::calculate_checksum(pkt)); // last step after setting all headers
+    return pkt->pack();
 //    std::stringstream pkt_buffer;
 //    pkt_buffer << pkt;
 //    std::cout << pkt_buffer.str() << std::endl;
@@ -78,9 +81,28 @@ string client::create_req_datagram() {
 }
 
 void client::receive_datagrams() {
-    uint32_t seq_no = 0;
-    uint32_t n = 2;
+    client_rdt_strategy *rdt = nullptr;
+    switch (client::client_mode) {
+        case STOP_AND_WAIT:
+            rdt = new client_selective_repeat_strategy(1);
+            break;
+        case SELECTIVE_REPEAT:
+            rdt = new client_selective_repeat_strategy(client::parser.get_default_window_size());
+            break;
+        case GO_BACK_N:
+            rdt = new client_go_back_N_strategy(client::parser.get_default_window_size());
+            break;
+        default:
+            perror("Invalid mode");
+            exit(EXIT_FAILURE);
+    }
 
+    rdt->set_client_socket(client::socket_fd);
+    rdt->set_server_address(client::server_addr);
+
+    while (!rdt->is_done()) {
+        rdt->run();
+    }
 }
 
 void client::handle_ack_timeout() {
@@ -112,6 +134,14 @@ void client::handle_ack_timeout() {
                    MSG_CONFIRM, (const struct sockaddr *) &server_addr, sizeof(server_addr));
         }
     }
+}
+
+client::mode client::get_client_mode() const {
+    return client_mode;
+}
+
+void client::set_client_mode(client::mode client_mode) {
+    client::client_mode = client_mode;
 }
 
 

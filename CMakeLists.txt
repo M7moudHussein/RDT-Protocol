@@ -10,18 +10,18 @@ set(SERVER_SOURCE_FILES
         server/parser/server_parser.h
         server/worker_thread.cpp
         server/worker_thread.h
-        server/rdt_strategy.h
-        server/selective_repeat_strategy.h
-        server/selective_repeat_strategy.cpp
-        server/go_back_N_strategy.h
-        server/go_back_N_strategy.cpp
+        server/strategy/rdt_strategy.h
+        server/strategy/selective_repeat_strategy.h
+        server/strategy/selective_repeat_strategy.cpp
+        server/strategy/go_back_N_strategy.h
+        server/strategy/go_back_N_strategy.cpp
         server/timer_thread.cpp
         server/timer_thread.h)
 
 set(CLIENT_SOURCE_FILES
         client/parser/client_parser.cpp
         client/parser/client_parser.h
-        client/client.cpp client/client.h)
+        client/client.cpp client/client.h client/strategy/client_rdt_strategy.h client/strategy/client_selective_repeat_strategy.cpp client/strategy/client_selective_repeat_strategy.h client/strategy/client_go_back_N_strategy.cpp client/strategy/client_go_back_N_strategy.h shared/packet_parser.cpp shared/packet_parser.h)
 
 set(SHARED_SOURCE_FILES
         shared/data_packet.h

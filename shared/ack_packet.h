@@ -5,9 +5,12 @@
 #include <ostream>
 #include <chrono>
 
+#define ACK_PKT_LEN 8
+
 class ack_packet {
 public:
     ack_packet();
+    ack_packet(uint32_t ackno);
 
     uint16_t get_cksum() const;
 

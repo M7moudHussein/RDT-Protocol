@@ -7,12 +7,11 @@
 
 #define HEADER_SIZE 8
 
-void wrap_extra_bits(int *check_sum);
+namespace packet_util {
 
-uint16_t calculate_checksum(data_packet packet);
+    uint16_t calculate_checksum(data_packet *packet);
+    uint16_t calculate_checksum(ack_packet *packet);
+};
 
-uint16_t calculate_checksum(ack_packet packet);
-
-void wrap_extra_bits(int *check_sum);
 
 #endif

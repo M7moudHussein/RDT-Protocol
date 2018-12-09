@@ -38,6 +38,11 @@ public:
 
     friend std::ostream &operator<<(std::ostream &strm, const data_packet &packet);
 
+    bool operator< (const data_packet &right) const
+    {
+        return seqno < right.seqno;
+    }
+
 //    struct time_comparator {
 //        bool operator()(const data_packet &lhs, const data_packet &rhs) const {
 //            return lhs.get_time_stamp() < rhs.get_time_stamp();

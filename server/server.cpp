@@ -8,9 +8,9 @@
 #include <iostream>
 #include "server.h"
 #include <sstream>
-#include "rdt_strategy.h"
-#include "selective_repeat_strategy.h"
-#include "go_back_N_strategy.h"
+#include "strategy/rdt_strategy.h"
+#include "strategy/selective_repeat_strategy.h"
+#include "strategy/go_back_N_strategy.h"
 
 #define MAX_UDP_BUFFER_SIZE 65536
 
