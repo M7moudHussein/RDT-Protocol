@@ -12,12 +12,16 @@ client_selective_repeat_strategy::client_selective_repeat_strategy(int window_si
 
 void client_selective_repeat_strategy::run() {
     // Start receiving data packets from server
-    socklen_t serv_add_len = sizeof server_address;
+    struct sockaddr_in sender_address;
+    socklen_t sender_addr_len = sizeof(sender_address);
     char *buffer = new char[BUF_SIZE];
     ssize_t bytes_received = recvfrom(client_socket, buffer, BUF_SIZE,
-                              MSG_WAITALL, (struct sockaddr *) &server_address,
-                              &serv_add_len);
-    std::cout << buffer << std::endl;
+                              MSG_WAITALL, (struct sockaddr *) &sender_address,
+                              &sender_addr_len);
+    std::cout << bytes_received << std::endl;
+    data_packet packet_received = data_packet(buffer, static_cast<int>(bytes_received));
+    std::cout << packet_received << std::endl;
+    std::cout << "Exiting..." << std::endl;
     exit(EXIT_SUCCESS);
     // TODO: Chunking to receive data from socket
     // Assume buffer now has only 1 data packet

@@ -3,8 +3,8 @@
 #include "packet_util.h"
 
 std::ostream &operator<<(std::ostream &strm, const ack_packet &packet) {
-    strm << packet.get_cksum();
-    strm << packet.get_len();
+    strm << packet.get_cksum() << "\n";
+    strm << packet.get_len() << "\n";
     strm << packet.get_ackno();
     strm << std::flush;
     return strm;

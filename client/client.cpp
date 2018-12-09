@@ -114,11 +114,18 @@ void client::handle_ack_timeout() {
 
         retval = select(socket_fd + 1, &rfds, NULL, NULL, &tv);
 
-        if (retval == -1)
+        if (retval == -1) {
             perror("select()");
-        else if (retval){
-            printf("ACK for file request received ! \n");
-            /* FD_ISSET(0, &rfds) will be true. */
+            exit(EXIT_FAILURE);
+        }
+        else if (retval) {
+            printf("ACK for file request received!\n");
+            struct sockaddr_in sender_address;
+            socklen_t sender_add_len = sizeof(sender_address);
+            char *buffer = new char[BUF_SIZE];
+            ssize_t bytes_received = recvfrom(socket_fd, buffer, BUF_SIZE,
+                                              MSG_WAITALL, (struct sockaddr *) &(sender_address),
+                                              &sender_add_len);
             break;
         }
         else {

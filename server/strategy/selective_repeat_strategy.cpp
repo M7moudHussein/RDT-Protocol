@@ -74,6 +74,7 @@ void selective_repeat_strategy::handle_time_out() {
 }
 
 void selective_repeat_strategy::send_packet(data_packet *packet) {
+    std::cout << "Sending packet..." << std::endl;
     sendto(server_socket, packet->pack().c_str(), packet->pack().length(),
            MSG_CONFIRM, (const struct sockaddr *) &client_address,
            sizeof client_address);

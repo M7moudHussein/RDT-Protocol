@@ -33,9 +33,7 @@ public:
 
 protected:
     void send_ack(ack_packet *packet) {
-        std::stringstream ack_ss;
-        ack_ss << packet;
-        sendto(client_socket, ack_ss.str().c_str(), ack_ss.str().length(),
+        sendto(client_socket, packet->pack().c_str(), packet->pack().length(),
                MSG_CONFIRM, (const struct sockaddr *) &server_address, sizeof(server_address));
     }
 
