@@ -95,12 +95,8 @@ void server::start() {
             server::worker_threads_acks_mtx.unlock();
         } else {
             // Acknowledge receiving of request
-            ack_packet ack;
-            std::cout << ack << std::endl;
-            std::stringstream ack_ss;
-            ack_ss << ack;
-            std::cout << "Printing ack" << ack_ss.str() << std::endl;
-            sendto(server::socket_fd, ack_ss.str().c_str(), ack_ss.str().length(),
+            ack_packet ack = ack_packet();
+            sendto(server::socket_fd, ack.pack().c_str(), ack.pack().length(),
                    MSG_CONFIRM, (const struct sockaddr *) &client_address,
                    client_address_len);
             exit(EXIT_SUCCESS);
