@@ -29,10 +29,6 @@ private:
     string req_datagram_buffer;
     ack_packet *ack_pkt;
     mode client_mode;
-public:
-    mode get_client_mode() const;
-
-    void set_client_mode(mode client_mode);
 
 private:
 
@@ -43,6 +39,8 @@ private:
     void receive_datagrams();
 
     void handle_ack_timeout();
+
+    void set_mode(std::string mode_str);
 };
 
 

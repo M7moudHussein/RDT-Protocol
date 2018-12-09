@@ -19,6 +19,8 @@ public:
 
     int get_default_window_size();
 
+    string get_client_mode();
+
 private:
     /* Server Properties */
     string server_ip;
@@ -28,6 +30,7 @@ private:
     uint16_t local_port_no;
     string req_file_name;
     int default_window_size;
+    string client_mode;
 };
 
 

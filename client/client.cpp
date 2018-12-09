@@ -60,6 +60,9 @@ void client::init() {
     server_addr.sin_addr.s_addr = inet_addr(parser.get_server_ip().c_str());
     server_addr.sin_port = htons(parser.get_server_port_no());
 
+    /* Setting mode of client */
+    set_mode(parser.get_client_mode());
+
     /*init ack pkt for file request */
     ack_pkt = new ack_packet();
 }
@@ -130,14 +133,18 @@ void client::handle_ack_timeout() {
     }
 }
 
-client::mode client::get_client_mode() const {
-    return client_mode;
+void client::set_mode(std::string mode_str) {
+    if (mode_str == "selective_repeat") {
+        client::client_mode = SELECTIVE_REPEAT;
+    } else if (mode_str == "go_back_n") {
+        client::client_mode = GO_BACK_N;
+    } else if (mode_str == "stop_and_wait") {
+        client::client_mode = STOP_AND_WAIT;
+    } else {
+        std::cerr << "Mode not supported!" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 }
-
-void client::set_client_mode(client::mode client_mode) {
-    client::client_mode = client_mode;
-}
-
 
 int main(int argc, char **argv) {
     if (argc != 2) {

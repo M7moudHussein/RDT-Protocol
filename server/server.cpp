@@ -18,6 +18,7 @@ server::server(server_parser serv_parser) : MAX_WINDOW_SIZE(serv_parser.get_max_
     server::port_number = serv_parser.get_port_number();
     server::random_seed = serv_parser.get_random_seed();
     server::loss_probability = serv_parser.get_loss_probability();
+    set_mode(serv_parser.get_server_mode());
     std::cout << "Server listening on port: " << server::port_number << std::endl;
     server::init();
 }
@@ -196,6 +197,20 @@ void server::handle_worker_thread(sockaddr_in client_address, std::string file_p
 
     // After all client handling is finished, mark yourself as done to be cleaned up by cleanup thread
     server::finalize_worker_thread();
+}
+
+
+void server::set_mode(std::string mode_str) {
+    if (mode_str == "selective_repeat") {
+        server::server_mode = SELECTIVE_REPEAT;
+    } else if (mode_str == "go_back_n") {
+        server::server_mode = GO_BACK_N;
+    } else if (mode_str == "stop_and_wait") {
+        server::server_mode = STOP_AND_WAIT;
+    } else {
+        std::cerr << "Mode not supported!" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 }
 
 void server::finalize_worker_thread() {

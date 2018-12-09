@@ -54,6 +54,8 @@ private:
 
     void init();
 
+    void set_mode(std::string mode_str);
+
 
 public:
     const int MAX_WINDOW_SIZE;

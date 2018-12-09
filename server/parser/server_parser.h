@@ -18,6 +18,7 @@ public:
     int get_max_window_size();
     int get_random_seed();
     float get_loss_probability();
+    std::string get_server_mode();
 };
 
 

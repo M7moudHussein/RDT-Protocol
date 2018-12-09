@@ -28,4 +28,8 @@ float server_parser::get_loss_probability() {
     return stof(server_parser::server_args[3]);
 }
 
+std::string server_parser::get_server_mode() {
+    return server_parser::server_args[4];
+}
+
 
