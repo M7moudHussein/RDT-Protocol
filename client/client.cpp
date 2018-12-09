@@ -70,10 +70,7 @@ void client::init() {
 string client::create_req_datagram() {
     string data = parser.get_req_file_name();
     std::cout << "Data here fams: " << data << std::endl;
-    data_packet *pkt = new data_packet(data);
-    pkt->set_len(static_cast<uint16_t>(HEADER_SIZE + data.length()));
-    pkt->set_seqno(static_cast<uint32_t>(0));
-    pkt->set_cksum(packet_util::calculate_checksum(pkt)); // last step after setting all headers
+    data_packet *pkt = new data_packet(data, 0);
     return pkt->pack();
 }
 

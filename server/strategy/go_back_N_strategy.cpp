@@ -77,3 +77,7 @@ void go_back_N_strategy::send_packet(data_packet *packet) {
     unacked_packets.insert(packet);
     set_mutex.unlock();
 }
+
+void go_back_N_strategy::advance_window() {
+
+}

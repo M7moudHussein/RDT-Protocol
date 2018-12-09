@@ -10,7 +10,7 @@ class packet_builder {
 public:
     packet_builder(std::string absolute_path, int queue_size);
 
-    data_packet *get_next_packet();
+    data_packet *get_next_packet(int &next_seq_num);
 
     bool has_next();
 

@@ -30,17 +30,11 @@ public:
 protected:
     void fill_window() {
         while (window.size() < window_size && pkt_builder->has_next()) {
-            window.push_back(pkt_builder->get_next_packet());
+            window.push_back(pkt_builder->get_next_packet(next_seq_number));
         }
     }
 
-    void advance_window() {
-        for (auto it = window.begin(); it != window.end() && (*it)->is_acked(); it++) {
-            window.pop_front();
-            if (pkt_builder->has_next())
-                window.push_back(pkt_builder->get_next_packet());
-        }
-    }
+    virtual void advance_window() = 0;
 
     virtual void handle_time_out() = 0;
 
@@ -54,7 +48,7 @@ protected:
     std::set<data_packet *> unacked_packets;
     std::mutex set_mutex;
     std::deque<data_packet *> window;
-    int window_size;
+    int window_size, next_seq_number;
 };
 
 #endif //RDT_PROTOCOL_RDT_STRATEGY_H

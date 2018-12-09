@@ -5,14 +5,16 @@
 #include "data_packet.h"
 #include "packet_util.h"
 
-data_packet::data_packet(std::string data) {
-    this->data = std::move(data);
+data_packet::data_packet(std::string data, uint32_t seqno) {
+    data_packet::data = std::move(data);
+    data_packet::len = static_cast<uint16_t>(data_packet::data.length() + HEADER_SIZE);
+    data_packet::seqno = seqno;
+    data_packet::cksum = packet_util::calculate_checksum(this);
 }
 
 data_packet::data_packet(char buffer[], int buf_len) {
-    data_packet::unpack(std::string(buffer, buf_len));
+    data_packet::unpack(std::string(buffer, static_cast<unsigned long>(buf_len)));
 }
-
 
 std::ostream &operator<<(std::ostream &strm, const data_packet &packet) {
     strm << packet.get_cksum();
@@ -27,24 +29,12 @@ uint16_t data_packet::get_cksum() const {
     return cksum;
 }
 
-void data_packet::set_cksum(uint16_t cksum) {
-    this->cksum = cksum;
-}
-
 uint16_t data_packet::get_len() const {
     return len;
 }
 
-void data_packet::set_len(uint16_t len) {
-    this->len = len;
-}
-
 uint32_t data_packet::get_seqno() const {
     return seqno;
-}
-
-void data_packet::set_seqno(uint32_t seqno) {
-    this->seqno = seqno;
 }
 
 const std::string &data_packet::get_data() const {

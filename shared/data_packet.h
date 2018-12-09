@@ -8,20 +8,14 @@
 
 class data_packet {
 public:
-    explicit data_packet(std::string data);
+    explicit data_packet(std::string data, uint32_t seqno);
     data_packet(char buffer[], int buf_len);
 
     uint16_t get_cksum() const;
 
-    void set_cksum(uint16_t cksum);
-
     uint16_t get_len() const;
 
-    void set_len(uint16_t len); // TODO: this should include header size
-
     uint32_t get_seqno() const;
-
-    void set_seqno(uint32_t seqno);
 
     const std::string &get_data() const;
 

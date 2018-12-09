@@ -75,18 +75,12 @@ void server::start() {
                                   MSG_WAITALL, (struct sockaddr *) &client_address,
                                   &client_address_len);
         std::cout << bytes_received << std::endl;
-        data_packet request = data_packet(buffer, static_cast<int>(bytes_received));
-        std::cout << "Client message received: " << std::endl;
-        std::cout << request.get_seqno() << " " << request.get_cksum() << " " << request.get_data() << " " << request.get_len() << std::endl;
 
-        // TODO: Parse message in buffer and form a packet
-
-        // Check if client_address is registered or not
         std::string client_address_string = get_address_string(client_address);
         if (server::registered_clients.find(client_address_string) != server::registered_clients.end()) {
-            ack_packet ack; //TODO set with the ack which arrived
-            // Client already registered, change corresponding bool to true
+            ack_packet ack = ack_packet(buffer);
 
+            // Push received ack in the queue of the thread handling this client
             server::registered_clients_mtx.lock();
             std::thread::id worker_to_ack = server::registered_clients[client_address_string];
             server::registered_clients_mtx.unlock();
@@ -95,15 +89,14 @@ void server::start() {
             server::worker_threads_acks[worker_to_ack].push(ack);
             server::worker_threads_acks_mtx.unlock();
         } else {
-            // Acknowledge receiving of request
+            data_packet request = data_packet(buffer, static_cast<int>(bytes_received));
             ack_packet ack = ack_packet();
             sendto(server::socket_fd, ack.pack().c_str(), ack.pack().length(),
                    MSG_CONFIRM, (const struct sockaddr *) &client_address,
                    client_address_len);
-            exit(EXIT_SUCCESS);
+
             // Dispatch worker thread
-            server::dispatch_worker_thread(client_address,
-                                           ""); //TODO change the string to the valid file path (relative path)
+            server::dispatch_worker_thread(client_address, request.get_data());
         }
     }
 }
@@ -144,6 +137,8 @@ void server::dispatch_worker_thread(sockaddr_in client_address, std::string file
     std::thread *th = new std::thread(&server::handle_worker_thread, this, client_address, file_path);
     worker_thread *wrk_th = new worker_thread(th);
 
+    wrk_th->detach();
+
     server::registered_clients_mtx.lock();
     server::registered_clients[get_address_string(client_address)] = wrk_th->get_thread_id();
     server::registered_clients_mtx.unlock();
@@ -152,7 +147,6 @@ void server::dispatch_worker_thread(sockaddr_in client_address, std::string file
     server::working_threads[wrk_th->get_thread_id()] = wrk_th;
     server::working_threads_mtx.unlock();
 
-    wrk_th->detach();
 }
 
 

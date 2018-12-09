@@ -19,8 +19,8 @@ public:
 
 private:
     void send_packet(data_packet *packet) override;
-
     void handle_time_out() override;
+    void advance_window() override;
 };
 
 
