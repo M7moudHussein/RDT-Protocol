@@ -10,7 +10,7 @@
 
 class rdt_strategy {
 public:
-    virtual void acknowledge_packet(ack_packet ack_pkt) = 0;
+    virtual void acknowledge_packet(ack_packet &ack_pkt) = 0;
 
     virtual void start() = 0;
 
@@ -45,7 +45,7 @@ protected:
     int server_socket;
     timer_thread *timer;
     const std::chrono::seconds PACKET_TIME_OUT = std::chrono::seconds(5); // assumed time out to be 5 seconds
-    std::set<data_packet *> unacked_packets;
+    std::set<data_packet *, data_packet::time_comparator> unacked_packets;
     std::mutex set_mutex;
     std::deque<data_packet *> window;
     int window_size, next_seq_number;

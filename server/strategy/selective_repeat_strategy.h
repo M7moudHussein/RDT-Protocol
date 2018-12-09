@@ -13,7 +13,7 @@ public:
 
     explicit selective_repeat_strategy(std::string file_name, int window_size);
 
-    void acknowledge_packet(ack_packet ack_pkt) override;
+    void acknowledge_packet(ack_packet &ack_pkt) override;
 
     void start() override;
 

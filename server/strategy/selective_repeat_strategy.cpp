@@ -22,7 +22,7 @@ selective_repeat_strategy::selective_repeat_strategy(std::string file_name) {
     fill_window();
 }
 
-void selective_repeat_strategy::acknowledge_packet(ack_packet ack_pkt) {
+void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
     auto it = window.begin();
     while (it != window.end()) {
         if (ack_pkt.get_ackno() == (*it)->get_seqno()) {
@@ -32,7 +32,7 @@ void selective_repeat_strategy::acknowledge_packet(ack_packet ack_pkt) {
                 unacked_packets.erase((*it));
                 set_mutex.unlock();
                 if (it == window.begin())
-                    rdt_strategy::advance_window();
+                    selective_repeat_strategy::advance_window();
             }
             break;
         }
@@ -54,6 +54,7 @@ void selective_repeat_strategy::start() {
 }
 
 void selective_repeat_strategy::handle_time_out() {
+    // Timer thread work, resends packet whenever it times out.
     while (true) {
         set_mutex.lock();
         data_packet *first_unacked_pkt = *(unacked_packets.begin());

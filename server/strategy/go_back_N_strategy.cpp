@@ -61,7 +61,7 @@ void go_back_N_strategy::acknowledge_packet(ack_packet ack_pkt) {
                 it--;
             }
             set_mutex.unlock();
-            rdt_strategy::advance_window();
+            go_back_N_strategy::advance_window();
             break;
         }
     }

@@ -46,7 +46,7 @@ protected:
     packet_parser parser;
     sockaddr_in server_address;
     int client_socket;
-    std::set<data_packet> window; // Add comparator by seqno
+    std::set<data_packet, data_packet::seq_num_comparator> window;
     int window_size;
     int expected_seqno;
     std::string file_data;

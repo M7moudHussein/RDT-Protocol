@@ -38,11 +38,17 @@ public:
         return seqno < right.seqno;
     }
 
-//    struct time_comparator {
-//        bool operator()(const data_packet &lhs, const data_packet &rhs) const {
-//            return lhs.get_time_stamp() < rhs.get_time_stamp();
-//        }
-//    };
+    struct time_comparator {
+        bool operator()(const data_packet *lhs, const data_packet *rhs) const {
+            return lhs->get_time_stamp() < rhs->get_time_stamp();
+        }
+    };
+
+    struct seq_num_comparator {
+        bool operator()(const data_packet &lhs, const data_packet &rhs) const {
+            return lhs.get_seqno() < rhs.get_seqno();
+        }
+    };
 
 private:
     uint16_t cksum;
