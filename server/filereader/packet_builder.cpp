@@ -4,9 +4,10 @@
 #include <sys/stat.h>
 #include <algorithm>
 #include <zconf.h>
+#include <iostream>
 
 packet_builder::packet_builder(std::string relative_path, int queue_size) {
-    struct stat statbuf;
+    struct stat statbuf{};
     std::string absolute_path = get_absolute_path(std::move(relative_path));
     if (stat(absolute_path.c_str(), &statbuf) == -1) {
         //TODO handle error
@@ -17,7 +18,7 @@ packet_builder::packet_builder(std::string relative_path, int queue_size) {
 
     fp = fopen(absolute_path.c_str(), "rb");
 
-    if (fp == NULL) {
+    if (fp == nullptr) {
         //TODO handle error
         exit(EXIT_FAILURE);
     }
@@ -29,11 +30,7 @@ data_packet *packet_builder::get_next_packet(int &next_seq_num) {
         size_t read_length = fread(buffer, sizeof(char), BUFFER_SIZE, fp);
         data_not_read -= read_length;
 
-        if (data_not_read <= 0) {
-            fclose(fp);
-            delete[] buffer;
-//            delete fp;
-        } else if (read_length == -1) {
+        if (read_length == -1) {
             //TODO handle error
             exit(EXIT_FAILURE);
         }
@@ -45,16 +42,18 @@ data_packet *packet_builder::get_next_packet(int &next_seq_num) {
 
             packets_read_queue.push(new data_packet(packet_data, static_cast<uint32_t>(next_seq_num)));
             next_seq_num++;
-            if (PACKET_DATA_SIZE < read_length) {
-                read_length -= PACKET_DATA_SIZE;
-            } else {
-                read_length = 0;
-            }
-            packet_start_index += PACKET_DATA_SIZE;
+
+            read_length -= packet_data.length();
+            packet_start_index += packet_data.length();
         }
     }
     data_packet *next_packet = packets_read_queue.front();
     packets_read_queue.pop();
+    if (!has_next()) {
+        fclose(fp);
+        delete[] buffer;
+    }
+    std::cout << next_packet->get_data() << std::endl;
     return next_packet;
 }
 

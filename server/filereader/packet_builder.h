@@ -19,7 +19,7 @@ private:
 
     FILE *fp;
     int queue_size;
-    size_t data_not_read;
+    long long data_not_read;
     std::queue<data_packet *> packets_read_queue;
     char *buffer;
 
