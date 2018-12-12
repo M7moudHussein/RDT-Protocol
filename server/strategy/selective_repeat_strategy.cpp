@@ -6,6 +6,7 @@
 //
 
 #include "selective_repeat_strategy.h"
+#include "../../shared/packet_util.h"
 
 #define DEFAULT_WINDOW_SIZE 10 //TODO just random window size... it should be changed to the right value
 
@@ -59,16 +60,20 @@ void selective_repeat_strategy::start() {
 void selective_repeat_strategy::handle_time_out() {
     // Timer thread work, resends packet whenever it times out.
     while (true) {
-        set_mutex.lock();
-        data_packet *first_unacked_pkt = *(unacked_packets.begin());
-        set_mutex.unlock();
-        if (first_unacked_pkt->get_time_stamp() + PACKET_TIME_OUT < std::chrono::steady_clock::now())
-            timer->sleep_until(first_unacked_pkt->get_time_stamp() + PACKET_TIME_OUT);
-        else {
+        if (!unacked_packets.empty()) {
             set_mutex.lock();
-            unacked_packets.erase(first_unacked_pkt);
+            data_packet *first_unacked_pkt = *(unacked_packets.begin());
             set_mutex.unlock();
-            selective_repeat_strategy::send_packet(first_unacked_pkt);
+            if (std::chrono::steady_clock::now() < first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT) {
+                std::cout << "Timer thread sleeping for 5 seconds..." << std::endl;
+                timer->sleep_until(first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT);
+            } else {
+                set_mutex.lock();
+                unacked_packets.erase(first_unacked_pkt);
+                set_mutex.unlock();
+                std::cout << "Timeout! Resending packet..." << std::endl;
+                selective_repeat_strategy::send_packet(first_unacked_pkt);
+            }
         }
     }
 }
