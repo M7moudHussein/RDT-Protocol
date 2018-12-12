@@ -4,11 +4,11 @@
 #include <ctime>
 #include <chrono>
 #include "string"
-#define PACKET_DATA_SIZE 500
 
 class data_packet {
 public:
     explicit data_packet(std::string data, uint32_t seqno);
+
     data_packet(char buffer[], int buf_len);
 
     uint16_t get_cksum() const;
@@ -33,8 +33,7 @@ public:
 
     friend std::ostream &operator<<(std::ostream &strm, const data_packet &packet);
 
-    bool operator< (const data_packet &right) const
-    {
+    bool operator<(const data_packet &right) const {
         return seqno < right.seqno;
     }
 

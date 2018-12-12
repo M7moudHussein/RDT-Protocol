@@ -4,7 +4,7 @@
 
 #include <string>
 #include <queue>
-#include "../../shared/data_packet.h"
+#include "../../shared/packet_util.h"
 
 class packet_builder {
 public:
@@ -23,7 +23,7 @@ private:
     std::queue<data_packet *> packets_read_queue;
     char *buffer;
 
-#define BUFFER_SIZE PACKET_DATA_SIZE * queue_size
+#define BUFFER_SIZE MAX_DATA_SIZE * queue_size
 };
 
 

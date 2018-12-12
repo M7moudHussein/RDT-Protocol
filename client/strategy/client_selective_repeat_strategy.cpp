@@ -1,9 +1,6 @@
-//
-// Created by awalid on 12/8/18.
-//
-
 #include <iostream>
 #include "client_selective_repeat_strategy.h"
+#include "../../shared/packet_util.h"
 
 client_selective_repeat_strategy::client_selective_repeat_strategy(int window_size) {
     client_selective_repeat_strategy::window_size = window_size;
@@ -14,8 +11,8 @@ void client_selective_repeat_strategy::run() {
     // Start receiving data packets from server
     struct sockaddr_in sender_address;
     socklen_t sender_addr_len = sizeof(sender_address);
-    char *buffer = new char[BUF_SIZE];
-    ssize_t bytes_received = recvfrom(client_socket, buffer, BUF_SIZE,
+    char *buffer = new char[MAX_PKT_SIZE];
+    ssize_t bytes_received = recvfrom(client_socket, buffer, MAX_PKT_SIZE,
                               MSG_WAITALL, (struct sockaddr *) &sender_address,
                               &sender_addr_len);
     std::cout << bytes_received << std::endl;

@@ -1,6 +1,3 @@
-//
-// Created by awalid on 12/8/18.
-//
 
 #ifndef RDT_PROTOCOL_CLIENT_RDT_STRATEGY_H
 #define RDT_PROTOCOL_CLIENT_RDT_STRATEGY_H
@@ -12,18 +9,16 @@
 #include "../../shared/packet_parser.h"
 #include <sstream>
 
-#define BUF_SIZE 512
-
 class client_rdt_strategy {
 public:
     virtual void run() = 0;
 
-    void set_server_address(sockaddr_in server_address) {
-        client_rdt_strategy::server_address = server_address;
-    }
-
     void set_client_socket(int client_socket) {
         client_rdt_strategy::client_socket = client_socket;
+    }
+
+    void set_server_address(sockaddr_in server_address) {
+        client_rdt_strategy::server_address = server_address;
     }
 
     bool is_done() {
@@ -33,8 +28,9 @@ public:
 
 protected:
     void send_ack(ack_packet *packet) {
-        sendto(client_socket, packet->pack().c_str(), packet->pack().length(),
-               MSG_CONFIRM, (const struct sockaddr *) &server_address, sizeof(server_address));
+        std::string pkt = packet->pack();
+        sendto(client_socket, pkt.c_str(), pkt.length(), MSG_CONFIRM,
+               (const struct sockaddr *) &server_address, sizeof(server_address));
     }
 
     void advance_window() {
@@ -50,4 +46,4 @@ protected:
     std::string file_data;
 };
 
-#endif //RDT_PROTOCOL_CLIENT_RDT_STRATEGY_H
+#endif
