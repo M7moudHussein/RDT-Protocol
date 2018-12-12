@@ -6,6 +6,8 @@
 #define RDT_PROTOCOL_PACKET_UTIL_H
 
 #define HEADER_SIZE 8
+#define MAX_DATA_SIZE 500
+#define MAX_PKT_SIZE 508
 
 namespace packet_util {
 

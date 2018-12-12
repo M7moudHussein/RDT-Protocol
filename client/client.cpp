@@ -21,9 +21,9 @@ void client::run() {
 
     /* Sending request to server */
     sendto(socket_fd, req_datagram_buffer.c_str(), req_datagram_buffer.length(),
-           MSG_CONFIRM, (const struct sockaddr *) &server_addr, sizeof(server_addr));
+           0, (const struct sockaddr *) &server_addr, sizeof(server_addr));
 
-    /* Waiting for ACK and resending req datagram*/
+    /* Waiting for ACK and resending req datagram */
     handle_ack_timeout();
 
     /* Waiting for new datagrams */
@@ -62,9 +62,19 @@ void client::init() {
 
     /* Setting mode of client */
     set_mode(parser.get_client_mode());
+}
 
-    /*init ack pkt for file request */
-    ack_pkt = new ack_packet();
+void client::set_mode(string mode_str) {
+    if (mode_str == "stop_and_wait") {
+        mode = STOP_AND_WAIT;
+    } else if (mode_str == "selective_repeat") {
+        mode = SELECTIVE_REPEAT;
+    } else if (mode_str == "go_back_n") {
+        mode = GO_BACK_N;
+    } else {
+        std::cerr << "Mode not supported!" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 }
 
 string client::create_req_datagram() {
@@ -74,80 +84,69 @@ string client::create_req_datagram() {
     return pkt->pack();
 }
 
-void client::receive_datagrams() {
-    client_rdt_strategy *rdt = nullptr;
-    switch (client::client_mode) {
-        case STOP_AND_WAIT:
-            rdt = new client_selective_repeat_strategy(1);
-            break;
-        case SELECTIVE_REPEAT:
-            rdt = new client_selective_repeat_strategy(client::parser.get_default_window_size());
-            break;
-        case GO_BACK_N:
-            rdt = new client_go_back_N_strategy(client::parser.get_default_window_size());
-            break;
-        default:
-            perror("Invalid mode");
-            exit(EXIT_FAILURE);
-    }
-
-    rdt->set_client_socket(client::socket_fd);
-    rdt->set_server_address(client::server_addr);
-
-    while (!rdt->is_done()) {
-        rdt->run();
-    }
-}
-
 void client::handle_ack_timeout() {
-    // while ack not received try resending request again
     while (true) {
         fd_set rfds;
         struct timeval tv;
         int retval;
-        /* Watch stdin (fd 0) to see when it has input. */
+
         FD_ZERO(&rfds);
         FD_SET(socket_fd, &rfds);
-        /* Wait up to five seconds for ACK to arrive. */
-        tv.tv_sec = 5;
+
+        tv.tv_sec = 5; // Wait up to five seconds for ACK to arrive
         tv.tv_usec = 0;
 
         retval = select(socket_fd + 1, &rfds, NULL, NULL, &tv);
 
-        if (retval == -1) {
-            perror("select()");
+        if (retval == -1) { // error
+            perror("SELECT FAILED");
             exit(EXIT_FAILURE);
-        }
-        else if (retval) {
-            printf("ACK for file request received!\n");
-            struct sockaddr_in sender_address;
-            socklen_t sender_add_len = sizeof(sender_address);
-            char *buffer = new char[BUF_SIZE];
-            ssize_t bytes_received = recvfrom(socket_fd, buffer, BUF_SIZE,
-                                              MSG_WAITALL, (struct sockaddr *) &(sender_address),
-                                              &sender_add_len);
-            break;
-        }
-        else {
-            printf("No ACK received within five seconds..... request packet resending\n");
-            /* Resending request to server */
+        } else if (retval) { // data received
+            printf("ACK received for file request!\n");
+            struct sockaddr_in sender_addr;
+            socklen_t sender_addr_len = sizeof(sender_addr);
+            ssize_t bytes_received = recvfrom(socket_fd, new char[HEADER_SIZE], HEADER_SIZE, MSG_WAITALL,
+                    (struct sockaddr *) &sender_addr, &sender_addr_len);
+            if (is_server_addr(sender_addr))
+                break;
+        } else { // timeout -> resend request packet
+            printf("NO ACK RECEIVED WITHIN 5 SECONDS\n");
+            printf("RESENDING REQUEST.....\n");
             sendto(socket_fd, req_datagram_buffer.c_str(), req_datagram_buffer.length(),
-                   MSG_CONFIRM, (const struct sockaddr *) &server_addr, sizeof(server_addr));
+                   0, (const struct sockaddr *) &server_addr, sizeof(server_addr));
         }
     }
 }
 
-void client::set_mode(std::string mode_str) {
-    if (mode_str == "selective_repeat") {
-        client::client_mode = SELECTIVE_REPEAT;
-    } else if (mode_str == "go_back_n") {
-        client::client_mode = GO_BACK_N;
-    } else if (mode_str == "stop_and_wait") {
-        client::client_mode = STOP_AND_WAIT;
-    } else {
-        std::cerr << "Mode not supported!" << std::endl;
-        exit(EXIT_FAILURE);
+void client::receive_datagrams() {
+    client_rdt_strategy *rdt = nullptr;
+    switch (mode) {
+        case STOP_AND_WAIT:
+            rdt = new client_selective_repeat_strategy(1);
+            break;
+        case SELECTIVE_REPEAT:
+            rdt = new client_selective_repeat_strategy(parser.get_default_window_size());
+            break;
+        case GO_BACK_N:
+            rdt = new client_go_back_N_strategy(parser.get_default_window_size());
+            break;
+        default:
+            perror("INVALID MODE");
+            exit(EXIT_FAILURE);
     }
+
+    rdt->set_client_socket(socket_fd);
+    rdt->set_server_address(server_addr);
+
+    while (!rdt->is_done())
+        rdt->run();
+}
+
+bool client::is_server_addr(sockaddr_in sender_addr) {
+    bool same_family = sender_addr.sin_family == server_addr.sin_family;
+    bool same_ip = sender_addr.sin_addr.s_addr == server_addr.sin_addr.s_addr;
+    bool same_port = sender_addr.sin_port == server_addr.sin_port;
+    return same_family && same_ip && same_port;
 }
 
 int main(int argc, char **argv) {

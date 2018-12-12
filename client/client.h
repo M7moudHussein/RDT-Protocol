@@ -27,20 +27,19 @@ private:
     struct sockaddr_in local_addr;
     struct sockaddr_in server_addr;
     string req_datagram_buffer;
-    ack_packet *ack_pkt;
-    mode client_mode;
-
-private:
+    mode mode;
 
     void init();
 
-    string create_req_datagram();
+    void set_mode(string mode_str);
 
-    void receive_datagrams();
+    string create_req_datagram();
 
     void handle_ack_timeout();
 
-    void set_mode(std::string mode_str);
+    void receive_datagrams();
+
+    bool is_server_addr(sockaddr_in);
 };
 
 
