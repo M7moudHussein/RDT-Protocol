@@ -23,13 +23,13 @@ public:
 
     void unpack(std::string);
 
-    std::chrono::steady_clock::time_point get_time_stamp() const;
-
     void ack();
 
     bool is_acked();
 
-    void set_time_stamp(std::chrono::steady_clock::time_point time_stamp);
+    const std::chrono::time_point<std::chrono::steady_clock> &get_time_stamp() const;
+
+    void set_time_stamp(const std::chrono::time_point<std::chrono::steady_clock> &time_stamp);
 
     friend std::ostream &operator<<(std::ostream &strm, const data_packet &packet);
 
@@ -53,12 +53,9 @@ private:
     uint16_t cksum;
     uint16_t len;
     uint32_t seqno;
-
-    std::string data;
-
     bool acked = false;
-
-    std::chrono::steady_clock::time_point time_stamp;
+    std::chrono::time_point<std::chrono::steady_clock> time_stamp;
+    std::string data;
 };
 
 

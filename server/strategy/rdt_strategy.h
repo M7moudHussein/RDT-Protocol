@@ -44,7 +44,6 @@ protected:
     sockaddr_in client_address;
     int server_socket;
     timer_thread *timer;
-    const std::chrono::seconds PACKET_TIME_OUT = std::chrono::seconds(5); // assumed time out to be 5 seconds
     std::set<data_packet *, data_packet::time_comparator> unacked_packets;
     std::mutex set_mutex;
     std::deque<data_packet *> window;

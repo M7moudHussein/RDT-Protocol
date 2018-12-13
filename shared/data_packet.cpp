@@ -74,18 +74,18 @@ void data_packet::unpack(std::string buf) {
     data = buf.substr(8, len - HEADER_SIZE);
 }
 
-std::chrono::steady_clock::time_point data_packet::get_time_stamp() const {
-    return this->time_stamp;
-}
-
-void data_packet::set_time_stamp(std::chrono::steady_clock::time_point time_stamp) {
-    this->time_stamp = time_stamp;
-}
-
 void data_packet::ack() {
     acked = true;
 }
 
 bool data_packet::is_acked() {
     return acked;
+}
+
+const std::chrono::time_point<std::chrono::steady_clock> &data_packet::get_time_stamp() const {
+    return time_stamp;
+}
+
+void data_packet::set_time_stamp(const std::chrono::time_point<std::chrono::steady_clock> &time_stamp) {
+    data_packet::time_stamp = time_stamp;
 }

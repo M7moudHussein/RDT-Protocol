@@ -5,6 +5,7 @@
 //
 
 #include "go_back_N_strategy.h"
+#include "../../shared/packet_util.h"
 
 #define DEFAULT_WINDOW_SIZE 200
 
@@ -30,8 +31,8 @@ void go_back_N_strategy::handle_time_out() {
         set_mutex.lock();
         data_packet *first_unacked_pkt = *(unacked_packets.begin());
         set_mutex.unlock();
-        if (first_unacked_pkt->get_time_stamp() + PACKET_TIME_OUT < std::chrono::steady_clock::now())
-            timer->sleep_until(first_unacked_pkt->get_time_stamp() + PACKET_TIME_OUT);
+        if (first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT < std::chrono::steady_clock::now())
+            timer->sleep_until(first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT);
         else {
             set_mutex.lock();
             std::vector<data_packet *> temp;
