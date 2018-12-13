@@ -10,15 +10,16 @@
 #include <iostream>
 #include <fstream>
 
-namespace file_writer {
+class file_writer {
 
-    std::ofstream file_stream;
+public:
+    static std::ofstream file_stream;
 
-    void open(std::string file_name);
+    static void open(std::string file_name);
 
-    void close(std::string file_name);
+    static void close(std::string file_name);
 
-    void write(std::string data);  // writes data to same opened file on intervals.
+    static void write(std::string data);  // writes data to same opened file on intervals.
 
 };
 

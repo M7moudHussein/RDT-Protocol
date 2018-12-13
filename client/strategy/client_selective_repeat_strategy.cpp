@@ -1,7 +1,6 @@
 #include <iostream>
 #include "client_selective_repeat_strategy.h"
 #include "../../shared/packet_util.h"
-#include "../filewriter/file_writer.h"
 
 client_selective_repeat_strategy::client_selective_repeat_strategy(int wnd_size) {
     window_size = wnd_size;

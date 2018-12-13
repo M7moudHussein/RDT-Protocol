@@ -4,7 +4,6 @@
 
 #include "client_go_back_N_strategy.h"
 #include "../../shared/packet_util.h"
-#include "../filewriter/file_writer.h"
 
 client_go_back_N_strategy::client_go_back_N_strategy(int wnd_size) {
     window_size = wnd_size;

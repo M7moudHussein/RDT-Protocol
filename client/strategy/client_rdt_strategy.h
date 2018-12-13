@@ -6,6 +6,7 @@
 #include <set>
 #include "../../shared/ack_packet.h"
 #include "../../shared/data_packet.h"
+#include "../filewriter/file_writer.h"
 #include <sstream>
 
 class client_rdt_strategy {
