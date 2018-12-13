@@ -12,7 +12,7 @@ public:
     void run() override;
 
 private:
-    void deliver_buffered_packets(uint32_t cur_pkt_seqno);
+    void deliver_buffered_packets();
 };
 
 

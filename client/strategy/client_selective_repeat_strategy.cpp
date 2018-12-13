@@ -25,7 +25,7 @@ void client_selective_repeat_strategy::run() {
         } else if (window.find(packet_received) == window.end()) { // if the packet was not previously received
             window.insert(packet_received); // buffer
             if (seqno == expected_seqno) // in order (this packet has a sequence number equal to the base of the receive window)
-                deliver_buffered_packets(seqno);
+                deliver_buffered_packets();
         }
         send_ack(new ack_packet(packet_received.get_seqno())); // send ACK for received packet
     } else if (seqno >= expected_seqno - window_size && seqno < expected_seqno) { // in the previous window
@@ -34,18 +34,15 @@ void client_selective_repeat_strategy::run() {
 }
 
 // TODO: this function may be declared at abstract rdt depending on GBN logic
-void client_selective_repeat_strategy::deliver_buffered_packets(uint32_t cur_pkt_seqno) {
+void client_selective_repeat_strategy::deliver_buffered_packets() {
     /* This packet, and any previously buffered and CONSECUTIVELY numbered
      * (beginning with rcv_base [expected_seqno]) packets are delivered to the upper layer. */
-    uint32_t prev_pkt_seqno = cur_pkt_seqno - 1;
     for (const data_packet &pkt : window) {
-        if (pkt.get_seqno() == prev_pkt_seqno + 1) { // consecutive
+        if (pkt.get_seqno() == expected_seqno) { // consecutive
             file_data.append(pkt.get_data());
-            prev_pkt_seqno++; // now prev_pkt_seqno = pkt.get_seqno()
+            expected_seqno++;
         } else {
-            break;
+            break; // since window set is ordered by seqno
         }
     }
-    // TODO: this may be moved to advance_window() depending on GBN logic
-    expected_seqno = prev_pkt_seqno + 1; // window is moved forward by the number of packets delivered to the upper layer
 }
