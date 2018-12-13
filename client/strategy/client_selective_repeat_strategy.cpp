@@ -23,7 +23,7 @@ void client_selective_repeat_strategy::run() {
     if (seqno >= expected_seqno && seqno < expected_seqno + window_size) { // in current window
         if (is_terminal_pkt(&packet_received)) {
             done = true; // TODO: check, since this flag terminates the algorithm, client will not be informed if the corresponding ACK is lost, server may keep waiting for the ACK
-        } else if (window.find(packet_received) == window.end()) { // if the packet was not previously received
+        } else if (window.find(packet_received) == window.end() && packet_util::calculate_checksum(&packet_received) == packet_received.get_cksum()) { // if the packet was not previously received
             window.insert(packet_received); // buffer
             if (seqno == expected_seqno) // in order (this packet has a sequence number equal to the base of the receive window)
                 deliver_buffered_packets();
