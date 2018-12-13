@@ -10,6 +10,7 @@
 
 class client_go_back_N_strategy : public client_rdt_strategy {
 private:
+    void deliver_packet(data_packet pkt);
 
 public:
     explicit client_go_back_N_strategy(int window_size);

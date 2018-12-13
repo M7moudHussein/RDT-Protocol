@@ -108,9 +108,6 @@ void client::handle_ack_timeout() {
             socklen_t sender_addr_len = sizeof(sender_addr);
             ssize_t bytes_received = recvfrom(socket_fd, new char[HEADER_SIZE], HEADER_SIZE, MSG_WAITALL,
                                               (struct sockaddr *) &sender_addr, &sender_addr_len);
-            // open file to write requested file data in
-            file_writer::open(parser.get_req_file_name());
-
             if (is_server_addr(sender_addr)) // TODO: add this check after each call to recvfrom() in all strategies?
                 break;
         } else { // timeout -> resend request packet
@@ -141,6 +138,9 @@ void client::receive_datagrams() {
 
     rdt->set_client_socket(socket_fd);
     rdt->set_server_address(server_addr);
+
+    // open file to write requested file data in
+    file_writer::open(parser.get_req_file_name());
 
     while (!rdt->is_done())
         rdt->run();

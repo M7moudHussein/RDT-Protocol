@@ -34,7 +34,6 @@ void client_selective_repeat_strategy::run() {
     }
 }
 
-// TODO: this function may be declared at abstract rdt depending on GBN logic
 void client_selective_repeat_strategy::deliver_buffered_packets() {
     /* This packet, and any previously buffered and CONSECUTIVELY numbered
      * (beginning with rcv_base [expected_seqno]) packets are delivered to the upper layer. */

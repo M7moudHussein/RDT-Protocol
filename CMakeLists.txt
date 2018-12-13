@@ -21,7 +21,7 @@ set(SERVER_SOURCE_FILES
 set(CLIENT_SOURCE_FILES
         client/parser/client_parser.cpp
         client/parser/client_parser.h
-        client/client.cpp client/client.h client/strategy/client_rdt_strategy.h client/strategy/client_selective_repeat_strategy.cpp client/strategy/client_selective_repeat_strategy.h client/strategy/client_go_back_N_strategy.cpp client/strategy/client_go_back_N_strategy.h shared/packet_parser.cpp shared/packet_parser.h client/filewriter/file_writer.cpp client/filewriter/file_writer.h)
+        client/client.cpp client/client.h client/strategy/client_rdt_strategy.h client/strategy/client_selective_repeat_strategy.cpp client/strategy/client_selective_repeat_strategy.h client/strategy/client_go_back_N_strategy.cpp client/strategy/client_go_back_N_strategy.h client/filewriter/file_writer.cpp client/filewriter/file_writer.h)
 
 set(SHARED_SOURCE_FILES
         shared/data_packet.h

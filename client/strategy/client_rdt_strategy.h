@@ -6,7 +6,6 @@
 #include <set>
 #include "../../shared/ack_packet.h"
 #include "../../shared/data_packet.h"
-#include "../../shared/packet_parser.h"
 #include <sstream>
 
 class client_rdt_strategy {
@@ -26,13 +25,12 @@ public:
     }
 
 protected:
-    packet_parser parser;
     sockaddr_in server_address;
     int client_socket;
 
     std::set<data_packet, data_packet::seq_num_comparator> window;
     int window_size;
-    int expected_seqno;
+    uint32_t expected_seqno;
 
     std::string file_data;
 
