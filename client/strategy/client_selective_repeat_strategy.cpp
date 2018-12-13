@@ -2,49 +2,50 @@
 #include "client_selective_repeat_strategy.h"
 #include "../../shared/packet_util.h"
 
-client_selective_repeat_strategy::client_selective_repeat_strategy(int window_size) {
-    client_selective_repeat_strategy::window_size = window_size;
-    client_selective_repeat_strategy::expected_seqno = 0;
+client_selective_repeat_strategy::client_selective_repeat_strategy(int wnd_size) {
+    window_size = wnd_size;
+    expected_seqno = 0;
+    done = false;
 }
 
 void client_selective_repeat_strategy::run() {
-    // Start receiving data packets from server
     struct sockaddr_in sender_address;
     socklen_t sender_addr_len = sizeof(sender_address);
     char *buffer = new char[MAX_PKT_SIZE];
-    ssize_t bytes_received = recvfrom(client_socket, buffer, MAX_PKT_SIZE,
-                              MSG_WAITALL, (struct sockaddr *) &sender_address,
-                              &sender_addr_len);
-    std::cout << bytes_received << std::endl;
-    data_packet packet_received = data_packet(buffer, static_cast<int>(bytes_received));
-    std::cout << packet_received << std::endl;
-    std::cout << "Exiting..." << std::endl;
-    exit(EXIT_SUCCESS);
-    // TODO: Chunking to receive data from socket
-    // Assume buffer now has only 1 data packet
 
-    // Construct packet from buffer
-    for (const data_packet &curr_received_pkt : parser.parse(buffer)) {
-        int seqno = curr_received_pkt.get_seqno();
-        if (seqno >= expected_seqno && seqno < expected_seqno + window_size) {
-            // In window
-            if (seqno != expected_seqno) {
-                // Out of order
-                window.insert(curr_received_pkt);
-            } else {
-                // In order
-                for (const data_packet &window_pkt : window) {
-                    if (window_pkt.get_seqno() == expected_seqno) {
-                        file_data.append(window_pkt.get_data());
-                        expected_seqno++;
-                    }
-                }
-            }
-            // send ack for received packet
-            send_ack(new ack_packet(curr_received_pkt.get_seqno()));
-        } else if (seqno < expected_seqno) {
-            // Packet already written in file, send ack for it
-            send_ack(new ack_packet(curr_received_pkt.get_seqno()));
+    ssize_t bytes_received = recvfrom(client_socket, buffer, MAX_PKT_SIZE, MSG_WAITALL,
+                                      (struct sockaddr *) &sender_address, &sender_addr_len);
+
+    data_packet packet_received = data_packet(buffer, static_cast<int>(bytes_received));
+    uint32_t seqno = packet_received.get_seqno();
+
+    if (seqno >= expected_seqno && seqno < expected_seqno + window_size) { // in current window
+        if (is_terminal_pkt(&packet_received)) {
+            done = true; // TODO: check, since this flag terminates the algorithm, client will not be informed if the corresponding ACK is lost, server may keep waiting for the ACK
+        } else if (window.find(packet_received) == window.end()) { // if the packet was not previously received
+            window.insert(packet_received); // buffer
+            if (seqno == expected_seqno) // in order (this packet has a sequence number equal to the base of the receive window)
+                deliver_buffered_packets(seqno);
+        }
+        send_ack(new ack_packet(packet_received.get_seqno())); // send ACK for received packet
+    } else if (seqno >= expected_seqno - window_size && seqno < expected_seqno) { // in the previous window
+        send_ack(new ack_packet(packet_received.get_seqno())); // packet already received and ACKed -> resend ACK for it
+    }
+}
+
+// TODO: this function may be declared at abstract rdt depending on GBN logic
+void client_selective_repeat_strategy::deliver_buffered_packets(uint32_t cur_pkt_seqno) {
+    /* This packet, and any previously buffered and CONSECUTIVELY numbered
+     * (beginning with rcv_base [expected_seqno]) packets are delivered to the upper layer. */
+    uint32_t prev_pkt_seqno = cur_pkt_seqno - 1;
+    for (const data_packet &pkt : window) {
+        if (pkt.get_seqno() == prev_pkt_seqno + 1) { // consecutive
+            file_data.append(pkt.get_data());
+            prev_pkt_seqno++; // now prev_pkt_seqno = pkt.get_seqno()
+        } else {
+            break;
         }
     }
+    // TODO: this may be moved to advance_window() depending on GBN logic
+    expected_seqno = prev_pkt_seqno + 1; // window is moved forward by the number of packets delivered to the upper layer
 }

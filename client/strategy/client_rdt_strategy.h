@@ -22,28 +22,35 @@ public:
     }
 
     bool is_done() {
-        // TODO: return true if end of file reached
-        return false;
+        return done;
     }
 
 protected:
+    packet_parser parser;
+    sockaddr_in server_address;
+    int client_socket;
+
+    std::set<data_packet, data_packet::seq_num_comparator> window;
+    int window_size;
+    int expected_seqno;
+
+    std::string file_data;
+
+    bool done;
+
     void send_ack(ack_packet *packet) {
         std::string pkt = packet->pack();
         sendto(client_socket, pkt.c_str(), pkt.length(), MSG_CONFIRM,
                (const struct sockaddr *) &server_address, sizeof(server_address));
     }
 
+    bool is_terminal_pkt(data_packet *packet) {
+        return packet->get_data().length() == 0;
+    }
+
     void advance_window() {
 
     }
-
-    packet_parser parser;
-    sockaddr_in server_address;
-    int client_socket;
-    std::set<data_packet, data_packet::seq_num_comparator> window;
-    int window_size;
-    int expected_seqno;
-    std::string file_data;
 };
 
 #endif

@@ -106,8 +106,8 @@ void client::handle_ack_timeout() {
             struct sockaddr_in sender_addr;
             socklen_t sender_addr_len = sizeof(sender_addr);
             ssize_t bytes_received = recvfrom(socket_fd, new char[HEADER_SIZE], HEADER_SIZE, MSG_WAITALL,
-                    (struct sockaddr *) &sender_addr, &sender_addr_len);
-            if (is_server_addr(sender_addr))
+                                              (struct sockaddr *) &sender_addr, &sender_addr_len);
+            if (is_server_addr(sender_addr)) // TODO: add this check after each call to recvfrom() in all strategies?
                 break;
         } else { // timeout -> resend request packet
             printf("NO ACK RECEIVED WITHIN 5 SECONDS\n");
