@@ -10,6 +10,7 @@
 #include "strategy/client_rdt_strategy.h"
 #include "strategy/client_go_back_N_strategy.h"
 #include "strategy/client_selective_repeat_strategy.h"
+#include "filewriter/file_writer.h"
 
 client::client(string args_file_path) : parser(args_file_path) {
     init();
@@ -107,6 +108,9 @@ void client::handle_ack_timeout() {
             socklen_t sender_addr_len = sizeof(sender_addr);
             ssize_t bytes_received = recvfrom(socket_fd, new char[HEADER_SIZE], HEADER_SIZE, MSG_WAITALL,
                                               (struct sockaddr *) &sender_addr, &sender_addr_len);
+            // open file to write requested file data in
+            file_writer::open(parser.get_req_file_name());
+
             if (is_server_addr(sender_addr)) // TODO: add this check after each call to recvfrom() in all strategies?
                 break;
         } else { // timeout -> resend request packet
@@ -140,6 +144,9 @@ void client::receive_datagrams() {
 
     while (!rdt->is_done())
         rdt->run();
+
+    //after all packets received close the file
+    file_writer::close(parser.get_req_file_name());
 }
 
 bool client::is_server_addr(sockaddr_in sender_addr) {

@@ -1,6 +1,7 @@
 #include <iostream>
 #include "client_selective_repeat_strategy.h"
 #include "../../shared/packet_util.h"
+#include "../filewriter/file_writer.h"
 
 client_selective_repeat_strategy::client_selective_repeat_strategy(int wnd_size) {
     window_size = wnd_size;
@@ -40,6 +41,9 @@ void client_selective_repeat_strategy::deliver_buffered_packets() {
     for (const data_packet &pkt : window) {
         if (pkt.get_seqno() == expected_seqno) { // consecutive
             file_data.append(pkt.get_data());
+            //write buffered data to file on intervals and then clear file data buffer to be used later again.
+            file_writer::write(file_data);
+            file_data.clear();
             expected_seqno++;
         } else {
             break; // since window set is ordered by seqno
