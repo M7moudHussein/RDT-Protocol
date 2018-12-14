@@ -137,8 +137,6 @@ void server::dispatch_worker_thread(sockaddr_in client_address, std::string file
     std::thread *th = new std::thread(&server::handle_worker_thread, this, client_address, file_path);
     worker_thread *wrk_th = new worker_thread(th);
 
-    wrk_th->detach();
-
     server::registered_clients_mtx.lock();
     server::registered_clients[get_address_string(client_address)] = wrk_th->get_thread_id();
     server::registered_clients_mtx.unlock();
@@ -147,6 +145,7 @@ void server::dispatch_worker_thread(sockaddr_in client_address, std::string file
     server::working_threads[wrk_th->get_thread_id()] = wrk_th;
     server::working_threads_mtx.unlock();
 
+    wrk_th->detach();
 }
 
 
@@ -179,6 +178,7 @@ void server::handle_worker_thread(sockaddr_in client_address, std::string file_p
         while (true) {
             this->worker_threads_acks_mtx.lock();
             if (!this->worker_threads_acks[worker_id].empty()) {
+                std::cout << "ACK received from main thread to worker thread" << std::endl;
                 ack = this->worker_threads_acks[worker_id].front();
                 this->worker_threads_acks[worker_id].pop();
                 break;
@@ -188,6 +188,9 @@ void server::handle_worker_thread(sockaddr_in client_address, std::string file_p
 
         rdt->acknowledge_packet(ack);
     }
+    std::cout << "Worker thread for client with address = " << get_address_string(client_address) << " is done" << std::endl;
+
+    // TODO: send empty data packet to inform client that file transfer is complete
 
     // After all client handling is finished, mark yourself as done to be cleaned up by cleanup thread
     server::finalize_worker_thread();
