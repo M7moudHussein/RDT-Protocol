@@ -20,8 +20,8 @@ int server_parser::get_max_window_size() {
     return stoi(server_parser::server_args[1]);
 }
 
-int server_parser::get_random_seed() {
-    return stoi(server_parser::server_args[2]);
+unsigned int server_parser::get_random_seed() {
+    return static_cast<unsigned int>(stoul(server_parser::server_args[2]));
 }
 
 float server_parser::get_loss_probability() {
