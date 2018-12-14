@@ -15,6 +15,7 @@ packet_builder::packet_builder(std::string relative_path, int queue_size) {
         exit(EXIT_FAILURE);
     }
     data_not_read = statbuf.st_size;
+    std::cout<<"Data not read from file is of size: "<<data_not_read<<std::endl;
     buffer = new char[BUFFER_SIZE];
 
     fp = fopen(absolute_path.c_str(), "rb");
@@ -30,7 +31,6 @@ data_packet *packet_builder::get_next_packet(int &next_seq_num) {
     if (data_not_read > 0 && packets_read_queue.empty()) {
         size_t read_length = fread(buffer, sizeof(char), BUFFER_SIZE, fp);
         data_not_read -= read_length;
-
         if (read_length == -1) {
             //TODO handle error
             exit(EXIT_FAILURE);
@@ -59,7 +59,7 @@ data_packet *packet_builder::get_next_packet(int &next_seq_num) {
 }
 
 bool packet_builder::has_next() {
-    return data_not_read > 0;
+    return data_not_read > 0 || !packets_read_queue.empty();
 }
 
 std::string packet_builder::get_absolute_path(std::string relative_path) {
