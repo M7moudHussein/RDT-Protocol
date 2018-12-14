@@ -37,11 +37,11 @@ void client_selective_repeat_strategy::run() {
 void client_selective_repeat_strategy::deliver_buffered_packets() {
     /* This packet, and any previously buffered and CONSECUTIVELY numbered
      * (beginning with rcv_base [expected_seqno]) packets are delivered to the upper layer. */
-    for (const data_packet &pkt : window) {
-        if (pkt.get_seqno() == expected_seqno) { // consecutive
-            file_data.append(pkt.get_data());
-            //write buffered data to file on intervals and then clear file data buffer to be used later again.
-            file_writer::write(file_data);
+    for (auto pkt_iter = window.begin(); pkt_iter != window.end();) {
+        if ((*pkt_iter).get_seqno() == expected_seqno) { // consecutive
+            file_data.append((*pkt_iter).get_data());
+            pkt_iter = window.erase(pkt_iter); // remove buffered packet, returning an iterator to the next element (packet)
+            file_writer::write(file_data); // write buffered data to file on intervals and then clear file data buffer to be used later again.
             file_data.clear();
             expected_seqno++;
         } else {
