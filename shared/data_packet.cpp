@@ -17,10 +17,12 @@ data_packet::data_packet(char buffer[], int buf_len) {
 }
 
 std::ostream &operator<<(std::ostream &strm, const data_packet &packet) {
-    strm << packet.get_cksum() << "\n";
-    strm << packet.get_len() << "\n";
-    strm << packet.get_seqno() << "\n";
-    strm << packet.get_data();
+    strm << "=======================================" << std::endl;
+    strm << packet.get_cksum() << std::endl;
+    strm << packet.get_len() << std::endl;
+    strm << packet.get_seqno() << std::endl;
+    strm << packet.get_data() << std::endl;
+    strm << "=======================================" << std::endl;
     strm << std::flush;
     return strm;
 }
@@ -63,13 +65,18 @@ std::string data_packet::pack() {
 }
 
 void data_packet::unpack(std::string buf) {
-    uint32_t u0 = buf[0], u1 = buf[1], u2 = buf[2], u3 = buf[3];
+    uint32_t u0 = buf[0] & 0x000000FF;
+    uint32_t u1 = buf[1] & 0x000000FF;
+    uint32_t u2 = buf[2] & 0x000000FF;
+    uint32_t u3 = buf[3] & 0x000000FF;
     seqno = u0 | (u1 << 8) | (u2 << 16) | (u3 << 24);
 
-    uint16_t x0 = buf[4], x1 = buf[5];
+    uint16_t x0 = buf[4] & 0x00FF;
+    uint16_t x1 = buf[5] & 0x00FF;
     len = x0 | (x1 << 8);
 
-    uint16_t y0 = buf[6], y1 = buf[7];
+    uint16_t y0 = buf[6] & 0x00FF;
+    uint16_t y1 = buf[7] & 0x00FF;
     cksum = y0 | (y1 << 8);
     data = buf.substr(8, len - HEADER_SIZE);
 }

@@ -15,7 +15,7 @@ packet_builder::packet_builder(std::string relative_path, int queue_size) {
         exit(EXIT_FAILURE);
     }
     data_not_read = statbuf.st_size;
-    std::cout<<"Data not read from file is of size: "<<data_not_read<<std::endl;
+    std::cout << "remaining data size: " << data_not_read + packets_read_queue.size() << std::endl;
     buffer = new char[BUFFER_SIZE];
 
     fp = fopen(absolute_path.c_str(), "rb");

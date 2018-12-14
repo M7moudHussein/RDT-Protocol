@@ -20,6 +20,10 @@ void client_selective_repeat_strategy::run() {
     uint32_t seqno = packet_received.get_seqno();
     std::cout << "Seq no.: " << seqno << " Expected Seq no: " << expected_seqno << std::endl;
 
+    std::cout << packet_received;
+    std::cout << packet_received.get_cksum() << "<><>" << packet_util::calculate_checksum(&packet_received)
+              << std::endl;
+
     if (seqno >= expected_seqno && seqno < expected_seqno + window_size) { // in current window
         if (is_terminal_pkt(&packet_received)) {
             done = true;

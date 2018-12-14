@@ -7,7 +7,6 @@
 std::ofstream file_writer::file_stream;
 
 void file_writer::open(std::string file_name) {
-//    file_writer::file_stream.open(file_name);
     file_writer::file_stream.open("output.txt");
 }
 
