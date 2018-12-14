@@ -4,8 +4,8 @@
 #include "packet_util.h"
 
 void wrap_extra_bits(int *check_sum) {
-    if (*check_sum & 0x01FF) {
-        *check_sum = (*check_sum & 0x00FF) + 1;
+    if (*check_sum & 0x1FFFF) {
+        *check_sum = (*check_sum & 0xFFFF) + 1;
     }
 }
 
@@ -21,7 +21,7 @@ uint16_t packet_util::calculate_checksum(data_packet *packet) {
         wrap_extra_bits(&check_sum);
     }
 
-    if (check_sum > 0x00FF) {
+    if (check_sum > 0xFFFF) {
         perror("Error calculating data packet checksum");
         exit(EXIT_FAILURE);
     }
@@ -36,7 +36,7 @@ uint16_t packet_util::calculate_checksum(ack_packet *packet) {
     check_sum = check_sum + packet->get_ackno();
     wrap_extra_bits(&check_sum);
 
-    if (check_sum > 0x00FF) {
+    if (check_sum > 0xFFFF) {
         perror("Error calculating ack packet checksum");
         exit(EXIT_FAILURE);
     }
