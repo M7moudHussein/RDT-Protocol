@@ -181,6 +181,7 @@ void server::handle_worker_thread(sockaddr_in client_address, std::string file_p
                 std::cout << "ACK received from main thread to worker thread" << std::endl;
                 ack = this->worker_threads_acks[worker_id].front();
                 this->worker_threads_acks[worker_id].pop();
+                this->worker_threads_acks_mtx.unlock();
                 break;
             }
             this->worker_threads_acks_mtx.unlock();

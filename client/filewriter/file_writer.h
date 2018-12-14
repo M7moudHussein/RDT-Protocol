@@ -15,7 +15,7 @@ class file_writer {
 public:
     static void open(std::string file_name);
 
-    static void close(std::string file_name);
+    static void close();
 
     static void write(std::string data);  // writes data to same opened file on intervals.
 

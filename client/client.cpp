@@ -148,7 +148,7 @@ void client::receive_datagrams() {
     std::cout << "File received fully from server" << std::endl;
 
     // After all packets received close the file
-    file_writer::close(parser.get_req_file_name());
+    file_writer::close();
 }
 
 bool client::is_server_addr(sockaddr_in sender_addr) {

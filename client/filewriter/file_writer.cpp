@@ -10,7 +10,7 @@ void file_writer::open(std::string file_name) {
     file_writer::file_stream.open(file_name);
 }
 
-void file_writer::close(std::string file_name) {
+void file_writer::close() {
     file_writer::file_stream.close();
 }
 
