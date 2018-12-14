@@ -77,7 +77,7 @@ void server::start() {
         bytes_received = recvfrom(server::socket_fd, buffer, MAX_UDP_BUFFER_SIZE,
                                   MSG_WAITALL, (struct sockaddr *) &client_address,
                                   &client_address_len);
-        std::cout << bytes_received << std::endl;
+        std::cout << "Server received " <<  bytes_received << " bytes" << std::endl;
 
         std::string client_address_string = get_address_string(client_address);
         if (server::registered_clients.find(client_address_string) != server::registered_clients.end()) {

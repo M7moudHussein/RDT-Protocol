@@ -96,14 +96,20 @@ void selective_repeat_strategy::send_packet(data_packet *packet) {
 }
 
 void selective_repeat_strategy::advance_window() {
-    for (auto it = window.begin(); it != window.end() && (*it)->is_acked(); it++) {
-        window.pop_front();
-        std::cout << "Popped packet " << (*it)->get_seqno() << std::endl;
-        if (pkt_builder->has_next()) {
-            std::cout << "pkt builder has next, sending next..." << std::endl;
-            auto pkt = pkt_builder->get_next_packet(next_seq_number);
-            window.push_back(pkt);
-            selective_repeat_strategy::send_packet(pkt);
+    auto pkt_iter = window.begin();
+    while (!window.empty()) {
+        if ((*pkt_iter)->is_acked()) {
+            window.pop_front();
+            std::cout << "Popped packet " << (*pkt_iter)->get_seqno() << std::endl;
+            pkt_iter = window.begin();
+            if (pkt_builder->has_next()) {
+                std::cout << "pkt builder has next, sending next..." << std::endl;
+                auto pkt = pkt_builder->get_next_packet(next_seq_number);
+                window.push_back(pkt);
+                selective_repeat_strategy::send_packet(pkt);
+            }
+        } else {
+            break;
         }
     }
 }
