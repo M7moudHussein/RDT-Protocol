@@ -11,13 +11,16 @@
 #include "strategy/rdt_strategy.h"
 #include "strategy/selective_repeat_strategy.h"
 #include "strategy/go_back_N_strategy.h"
+#include "packet_sender.h"
 
 #define MAX_UDP_BUFFER_SIZE 65536
 
 server::server(server_parser serv_parser) : MAX_WINDOW_SIZE(serv_parser.get_max_window_size()) {
     server::port_number = serv_parser.get_port_number();
-    server::random_seed = serv_parser.get_random_seed();
-    server::loss_probability = serv_parser.get_loss_probability();
+
+    packet_sender::set_seed(serv_parser.get_random_seed());
+    packet_sender::set_probability(serv_parser.get_loss_probability());
+
     set_mode(serv_parser.get_server_mode());
     std::cout << "Server listening on port: " << server::port_number << std::endl;
     server::init();
@@ -70,7 +73,7 @@ void server::start() {
         // Receives client packets
         ssize_t bytes_received;
         struct sockaddr_in client_address{};
-        socklen_t client_address_len = sizeof client_address;
+        socklen_t client_address_len = sizeof(client_address);
         bytes_received = recvfrom(server::socket_fd, buffer, MAX_UDP_BUFFER_SIZE,
                                   MSG_WAITALL, (struct sockaddr *) &client_address,
                                   &client_address_len);

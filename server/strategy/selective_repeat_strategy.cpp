@@ -94,6 +94,6 @@ void selective_repeat_strategy::advance_window() {
         window.pop_front();
         if (pkt_builder->has_next())
             window.push_back(pkt_builder->get_next_packet(next_seq_number));
-                selective_repeat_strategy::send_packet(*it);
+        selective_repeat_strategy::send_packet(*it);
     }
 }

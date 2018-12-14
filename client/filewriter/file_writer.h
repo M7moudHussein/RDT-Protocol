@@ -13,14 +13,14 @@
 class file_writer {
 
 public:
-    static std::ofstream file_stream;
-
     static void open(std::string file_name);
 
     static void close(std::string file_name);
 
     static void write(std::string data);  // writes data to same opened file on intervals.
 
+private:
+    static std::ofstream file_stream;
 };
 
 
