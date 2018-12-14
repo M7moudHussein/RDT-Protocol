@@ -1,7 +1,3 @@
-//
-// Created by awalid on 12/5/18.
-//
-
 #include <fstream>
 #include "server_parser.h"
 
@@ -32,4 +28,10 @@ std::string server_parser::get_server_mode() {
     return server_parser::server_args[4];
 }
 
-
+std::vector<int> server_parser::get_loss_sequence() {
+    std::vector<int> loss_sequence;
+    for (int i = 5; i < server_parser::server_args.size(); i++) {
+        loss_sequence.push_back(std::stoi(server_parser::server_args[i]));
+    }
+    return loss_sequence;
+}

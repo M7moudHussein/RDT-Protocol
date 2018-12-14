@@ -24,6 +24,8 @@ public:
     float get_loss_probability();
 
     std::string get_server_mode();
+
+    std::vector<int> get_loss_sequence();
 };
 
 
