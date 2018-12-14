@@ -193,7 +193,8 @@ void server::handle_worker_thread(sockaddr_in client_address, std::string file_p
     }
     std::cout << "Worker thread for client with address = " << get_address_string(client_address) << " is done" << std::endl;
 
-    // TODO: send empty data packet to inform client that file transfer is complete
+    //Send empty data packet to inform client that file transfer is complete
+    rdt->send_empty_packet();
 
     // After all client handling is finished, mark yourself as done to be cleaned up by cleanup thread
     server::finalize_worker_thread();

@@ -145,7 +145,9 @@ void client::receive_datagrams() {
     while (!rdt->is_done())
         rdt->run();
 
-    //after all packets received close the file
+    std::cout << "File received fully from server" << std::endl;
+
+    // After all packets received close the file
     file_writer::close(parser.get_req_file_name());
 }
 
