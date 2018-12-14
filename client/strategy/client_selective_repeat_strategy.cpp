@@ -26,8 +26,8 @@ void client_selective_repeat_strategy::run() {
             window.insert(packet_received); // buffer
             if (seqno == expected_seqno) // in order (this packet has a sequence number equal to the base of the receive window)
                 deliver_buffered_packets();
+            send_ack(new ack_packet(packet_received.get_seqno())); // send ACK for received packet
         }
-        send_ack(new ack_packet(packet_received.get_seqno())); // send ACK for received packet
     } else if (seqno >= expected_seqno - window_size && seqno < expected_seqno) { // in the previous window
         send_ack(new ack_packet(packet_received.get_seqno())); // packet already received and ACKed -> resend ACK for it
     }
