@@ -39,10 +39,12 @@ void client_selective_repeat_strategy::deliver_buffered_packets() {
     for (auto pkt_iter = window.begin(); pkt_iter != window.end();) {
         if ((*pkt_iter).get_seqno() == expected_seqno) { // consecutive
             file_data.append((*pkt_iter).get_data());
-            window.erase(pkt_iter); // remove buffered packet
+            pkt_iter = window.erase(pkt_iter); // remove buffered packet, returning an iterator to the next element (packet)
             file_writer::write(file_data); // write buffered data to file on intervals and then clear file data buffer to be used later again.
             file_data.clear();
             expected_seqno++;
+        } else {
+            break; // since window set is ordered by seqno
         }
     }
 }
