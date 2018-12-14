@@ -11,13 +11,16 @@
 #include "strategy/rdt_strategy.h"
 #include "strategy/selective_repeat_strategy.h"
 #include "strategy/go_back_N_strategy.h"
+#include "packet_sender.h"
 
 #define MAX_UDP_BUFFER_SIZE 65536
 
 server::server(server_parser serv_parser) : MAX_WINDOW_SIZE(serv_parser.get_max_window_size()) {
     server::port_number = serv_parser.get_port_number();
-    server::random_seed = serv_parser.get_random_seed();
-    server::loss_probability = serv_parser.get_loss_probability();
+
+    packet_sender::set_seed(serv_parser.get_random_seed());
+    packet_sender::set_probability(serv_parser.get_loss_probability());
+
     set_mode(serv_parser.get_server_mode());
     std::cout << "Server listening on port: " << server::port_number << std::endl;
     server::init();
@@ -70,7 +73,7 @@ void server::start() {
         // Receives client packets
         ssize_t bytes_received;
         struct sockaddr_in client_address{};
-        socklen_t client_address_len = sizeof client_address;
+        socklen_t client_address_len = sizeof(client_address);
         bytes_received = recvfrom(server::socket_fd, buffer, MAX_UDP_BUFFER_SIZE,
                                   MSG_WAITALL, (struct sockaddr *) &client_address,
                                   &client_address_len);
@@ -137,8 +140,6 @@ void server::dispatch_worker_thread(sockaddr_in client_address, std::string file
     std::thread *th = new std::thread(&server::handle_worker_thread, this, client_address, file_path);
     worker_thread *wrk_th = new worker_thread(th);
 
-    wrk_th->detach();
-
     server::registered_clients_mtx.lock();
     server::registered_clients[get_address_string(client_address)] = wrk_th->get_thread_id();
     server::registered_clients_mtx.unlock();
@@ -147,6 +148,7 @@ void server::dispatch_worker_thread(sockaddr_in client_address, std::string file
     server::working_threads[wrk_th->get_thread_id()] = wrk_th;
     server::working_threads_mtx.unlock();
 
+    wrk_th->detach();
 }
 
 
@@ -179,6 +181,7 @@ void server::handle_worker_thread(sockaddr_in client_address, std::string file_p
         while (true) {
             this->worker_threads_acks_mtx.lock();
             if (!this->worker_threads_acks[worker_id].empty()) {
+                std::cout << "ACK received from main thread to worker thread" << std::endl;
                 ack = this->worker_threads_acks[worker_id].front();
                 this->worker_threads_acks[worker_id].pop();
                 break;
@@ -188,6 +191,10 @@ void server::handle_worker_thread(sockaddr_in client_address, std::string file_p
 
         rdt->acknowledge_packet(ack);
     }
+    std::cout << "Worker thread for client with address = " << get_address_string(client_address) << " is done" << std::endl;
+
+    //Send empty data packet to inform client that file transfer is complete
+    rdt->send_empty_packet();
 
     // After all client handling is finished, mark yourself as done to be cleaned up by cleanup thread
     server::finalize_worker_thread();

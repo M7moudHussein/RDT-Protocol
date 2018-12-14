@@ -26,6 +26,14 @@ public:
         return this->window.empty();
     }
 
+    void send_empty_packet() {
+        // Assuming here no loss in sending this empty packet
+        auto packet = new data_packet(std::string(), next_seq_number);
+        sendto(server_socket, packet->pack().c_str(), packet->pack().length(),
+               0, (const struct sockaddr *) &client_address,
+               sizeof client_address);
+    }
+
 
 protected:
     void fill_window() {

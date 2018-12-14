@@ -16,12 +16,21 @@ set(SERVER_SOURCE_FILES
         server/strategy/go_back_N_strategy.h
         server/strategy/go_back_N_strategy.cpp
         server/timer_thread.cpp
-        server/timer_thread.h)
+        server/timer_thread.h
+        server/packet_sender.h
+        server/packet_sender.cpp)
 
 set(CLIENT_SOURCE_FILES
         client/parser/client_parser.cpp
         client/parser/client_parser.h
-        client/client.cpp client/client.h client/strategy/client_rdt_strategy.h client/strategy/client_selective_repeat_strategy.cpp client/strategy/client_selective_repeat_strategy.h client/strategy/client_go_back_N_strategy.cpp client/strategy/client_go_back_N_strategy.h client/filewriter/file_writer.cpp client/filewriter/file_writer.h)
+        client/client.cpp client/client.h
+        client/strategy/client_rdt_strategy.h
+        client/strategy/client_selective_repeat_strategy.cpp
+        client/strategy/client_selective_repeat_strategy.h
+        client/strategy/client_go_back_N_strategy.cpp
+        client/strategy/client_go_back_N_strategy.h
+        client/filewriter/file_writer.cpp
+        client/filewriter/file_writer.h)
 
 set(SHARED_SOURCE_FILES
         shared/data_packet.h
@@ -30,7 +39,8 @@ set(SHARED_SOURCE_FILES
         shared/ack_packet.h
         shared/packet_util.h
         server/filereader/packet_builder.h
-        server/filereader/packet_builder.cpp shared/packet_util.cpp)
+        server/filereader/packet_builder.cpp
+        shared/packet_util.cpp)
 
 add_executable(server ${SHARED_SOURCE_FILES} ${SERVER_SOURCE_FILES})
 add_executable(client ${SHARED_SOURCE_FILES} ${CLIENT_SOURCE_FILES})

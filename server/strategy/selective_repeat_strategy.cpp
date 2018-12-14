@@ -26,17 +26,21 @@ selective_repeat_strategy::selective_repeat_strategy(std::string file_name) {
 }
 
 void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
-    std::cout << ack_pkt.get_ackno() << " " << ack_pkt.get_len() << " " << ack_pkt.get_cksum() << std::endl;
     auto it = window.begin();
     while (it != window.end()) {
         if (ack_pkt.get_ackno() == (*it)->get_seqno()) {
-            if (!(*it)->is_acked()) {//duplicate acks skip
+            // This check is to skip duplicate acks
+            if (!(*it)->is_acked()) {
+                std::cout << "Acknowledging packet with seqno = " << (*it)->get_seqno() << std::endl;
                 (*it)->ack();
                 set_mutex.lock();
                 unacked_packets.erase((*it));
                 set_mutex.unlock();
-                if (it == window.begin())
+                std::cout << "Removed packet with seqno = " << (*it)->get_seqno() << " from timer thread" << std::endl;
+                if (it == window.begin()) {
+                    std::cout << "Advancing window..." << std::endl;
                     selective_repeat_strategy::advance_window();
+                }
             }
             break;
         }
@@ -79,7 +83,7 @@ void selective_repeat_strategy::handle_time_out() {
 }
 
 void selective_repeat_strategy::send_packet(data_packet *packet) {
-    std::cout << "Sending packet..." << std::endl;
+    std::cout << "Sending packet with seqno = " << packet->get_seqno() << std::endl;
     sendto(server_socket, packet->pack().c_str(), packet->pack().length(),
            MSG_CONFIRM, (const struct sockaddr *) &client_address,
            sizeof client_address);
@@ -92,8 +96,12 @@ void selective_repeat_strategy::send_packet(data_packet *packet) {
 void selective_repeat_strategy::advance_window() {
     for (auto it = window.begin(); it != window.end() && (*it)->is_acked(); it++) {
         window.pop_front();
-        if (pkt_builder->has_next())
-            window.push_back(pkt_builder->get_next_packet(next_seq_number));
-                selective_repeat_strategy::send_packet(*it);
+        std::cout << "Popped packet " << (*it)->get_seqno() << std::endl;
+        if (pkt_builder->has_next()) {
+            std::cout << "pkt builder has next, sending next..." << std::endl;
+            auto pkt = pkt_builder->get_next_packet(next_seq_number);
+            window.push_back(pkt);
+            selective_repeat_strategy::send_packet(pkt);
+        }
     }
 }

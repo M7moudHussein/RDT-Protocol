@@ -31,8 +31,6 @@ private:
     int socket_fd;
     sockaddr_in server_address;
     int port_number;
-    int random_seed;
-    float loss_probability;
     mode server_mode;
 
     std::map<std::thread::id, worker_thread *> working_threads;
