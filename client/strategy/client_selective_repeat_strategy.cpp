@@ -18,14 +18,15 @@ void client_selective_repeat_strategy::run() {
 
     data_packet packet_received = data_packet(buffer, static_cast<int>(bytes_received));
     uint32_t seqno = packet_received.get_seqno();
-
+    std::cout<<"Seq no.: "<<seqno<<" Expected Seq no: "<<expected_seqno<<std::endl;
     if (seqno >= expected_seqno && seqno < expected_seqno + window_size) { // in current window
         if (is_terminal_pkt(&packet_received)) {
             done = true; // TODO: check, since this flag terminates the algorithm, client will not be informed if the corresponding ACK is lost, server may keep waiting for the ACK
-        } else if (window.find(packet_received) == window.end() && packet_util::calculate_checksum(&packet_received) == packet_received.get_cksum()) { // if the packet was not previously received
+        } else if (window.find(packet_received) == window.end()) {// if the packet was not previously received //TODO ADD CHECKSUM CONDITION HERE
             window.insert(packet_received); // buffer
             if (seqno == expected_seqno) // in order (this packet has a sequence number equal to the base of the receive window)
                 deliver_buffered_packets();
+            std::cout<<"Sending ACK for packet with seq no: "<<packet_received.get_seqno()<<std::endl;
             send_ack(new ack_packet(packet_received.get_seqno())); // send ACK for received packet
         }
     } else if (seqno >= expected_seqno - window_size && seqno < expected_seqno) { // in the previous window
