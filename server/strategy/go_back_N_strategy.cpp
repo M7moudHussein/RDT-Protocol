@@ -78,5 +78,17 @@ void go_back_N_strategy::send_packet(data_packet *packet) {
 }
 
 void go_back_N_strategy::advance_window() {
+    //TODO implement this function
+}
 
+void go_back_N_strategy::expand_window() {
+    //TODO implement this function
+}
+
+void go_back_N_strategy::shrink_window(int new_size) {
+    //TODO implement this function
+}
+
+void go_back_N_strategy::adjust_window_size() {
+    //TODO implement this function
 }

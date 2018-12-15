@@ -57,11 +57,13 @@ void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
 void selective_repeat_strategy::expand_window() {
     while (window.size() < window_size && (!aux_window.empty() || pkt_builder->has_next())) {
         std::cout << "pkt builder has next, sending next..." << std::endl;
-        auto pkt;
-        if (!aux_window.empty())
-            pkt = aux_window.pop_front();
-        else
+        data_packet *pkt;
+        if (!aux_window.empty()) {
+            pkt = aux_window.front();
+            aux_window.pop_front();
+        } else {
             pkt = pkt_builder->get_next_packet(next_seq_number);
+        }
         window.push_back(pkt);
         selective_repeat_strategy::send_packet(pkt);
     }
