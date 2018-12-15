@@ -44,6 +44,12 @@ protected:
 
     virtual void advance_window() = 0;
 
+    virtual void expand_window() = 0;
+
+    virtual void shrink_window(int new_size) = 0;
+
+    virtual void adjust_window_size() = 0;
+
     virtual void handle_time_out() = 0;
 
     virtual void send_packet(data_packet *packet) = 0;

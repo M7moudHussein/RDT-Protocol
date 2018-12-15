@@ -43,14 +43,51 @@ void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
                 set_mutex.unlock();
                 std::cout << "Removed packet with seqno = " << (*it)->get_seqno() << " from timer thread" << std::endl;
                 if (it == window.begin()) {
-//                    std::cout << "Advancing window..." << std::endl;
                     selective_repeat_strategy::advance_window();
                 }
             }
+            selective_repeat_strategy::adjust_window_size();
+            selective_repeat_strategy::expand_window();
             break;
         }
         it++;
     }
+}
+
+void selective_repeat_strategy::expand_window() {
+    while (window.size() < window_size && (!aux_window.empty() || pkt_builder->has_next())) {
+        std::cout << "pkt builder has next, sending next..." << std::endl;
+        auto pkt;
+        if (!aux_window.empty())
+            pkt = aux_window.pop_front();
+        else
+            pkt = pkt_builder->get_next_packet(next_seq_number);
+        window.push_back(pkt);
+        selective_repeat_strategy::send_packet(pkt);
+    }
+}
+
+void selective_repeat_strategy::shrink_window(int new_size) {
+    int new_threshold = window_size / 2;
+    threshold = new_threshold < 1 ? 1 : new_threshold;
+    window_size = new_size;
+
+    auto it = window.begin() + window_size;
+    while (it != window.end()) {
+        aux_window.push_back(*it);
+        unacked_packets.erase(*it);
+        it = window.erase(it);
+    }
+}
+
+void selective_repeat_strategy::adjust_window_size() {
+    int new_size;
+    if (window_size < threshold)
+        new_size = window_size * 2;
+    else
+        new_size = window_size + 1;
+
+    window_size = new_size > max_window_size ? max_window_size : new_size;
 }
 
 void selective_repeat_strategy::start() {
@@ -68,7 +105,7 @@ void selective_repeat_strategy::start() {
 }
 
 void selective_repeat_strategy::handle_time_out() {
-    // Timer thread work, resends packet whenever it times out.
+    // Timer thread work, re-sends packet whenever it times out.
     while (true) {
         if (!unacked_packets.empty()) {
             set_mutex.lock();
@@ -79,18 +116,10 @@ void selective_repeat_strategy::handle_time_out() {
                 timer->sleep_until(first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT);
             } else {
                 set_mutex.lock();
-
-                std::string unacked_packets_list;
-                for (auto pkt : unacked_packets) {
-                    unacked_packets_list += std::to_string(pkt->get_seqno()) + ", ";
-                }
-                unacked_packets_list.pop_back(), unacked_packets_list.pop_back();
-
-                std::cout << "Unacked packets: " << unacked_packets_list << std::endl;
-
                 unacked_packets.erase(first_unacked_pkt);
                 set_mutex.unlock();
                 std::cout << "Timeout! Resending packet..." << std::endl;
+                shrink_window(1);
                 selective_repeat_strategy::send_packet(first_unacked_pkt);
             }
         }
@@ -113,12 +142,6 @@ void selective_repeat_strategy::advance_window() {
             window.pop_front();
             std::cout << "Popped packet " << (*pkt_iter)->get_seqno() << std::endl;
             pkt_iter = window.begin();
-            if (pkt_builder->has_next()) {
-                std::cout << "pkt builder has next, sending next..." << std::endl;
-                auto pkt = pkt_builder->get_next_packet(next_seq_number);
-                window.push_back(pkt);
-                selective_repeat_strategy::send_packet(pkt);
-            }
         } else {
             break;
         }

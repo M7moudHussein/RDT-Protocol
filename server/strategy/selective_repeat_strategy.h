@@ -19,8 +19,16 @@ public:
 
 private:
     void send_packet(data_packet *packet) override;
+
     void handle_time_out() override;
+
     void advance_window() override;
+
+    void expand_window() override;
+
+    void shrink_window(int new_size) override;
+
+    void adjust_window_size() override;
 };
 
 
