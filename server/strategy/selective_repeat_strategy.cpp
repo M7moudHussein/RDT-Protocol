@@ -8,7 +8,7 @@
 #include "selective_repeat_strategy.h"
 #include "../../shared/packet_util.h"
 
-#define DEFAULT_WINDOW_SIZE 100000 //TODO just random window size... it should be changed to the right value
+#define DEFAULT_WINDOW_SIZE 10 //TODO just random window size... it should be changed to the right value
 
 selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int window_size) {
     selective_repeat_strategy::pkt_builder = new packet_builder(std::move(file_name), window_size);
@@ -73,8 +73,9 @@ void selective_repeat_strategy::handle_time_out() {
                 timer->sleep_until(first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT);
             } else {
                 set_mutex.lock();
-                for (auto pkt : unacked_packets)
-                    std::cout << "Packet : " << pkt->get_seqno() << "is acked: " << pkt->is_acked() << std::endl;
+                for (auto pkt : unacked_packets) {
+                    std::cout << "Packet : " << pkt->get_seqno() << " is acked: " << pkt->is_acked() << std::endl;
+                }
                 unacked_packets.erase(first_unacked_pkt);
                 set_mutex.unlock();
                 std::cout << "Timeout! Resending packet..." << std::endl;

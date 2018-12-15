@@ -54,7 +54,6 @@ data_packet *packet_builder::get_next_packet(int &next_seq_num) {
         fclose(fp);
         delete[] buffer;
     }
-    std::cout << next_packet->get_data() << std::endl;
     return next_packet;
 }
 
