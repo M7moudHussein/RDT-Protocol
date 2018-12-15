@@ -9,9 +9,9 @@
 
 class selective_repeat_strategy : public rdt_strategy {
 public:
-    explicit selective_repeat_strategy(std::string file_name);
+    explicit selective_repeat_strategy(std::string file_name, int max_window_size);
 
-    explicit selective_repeat_strategy(std::string file_name, int window_size);
+    explicit selective_repeat_strategy(std::string file_name, int window_size, int max_window_size);
 
     void acknowledge_packet(ack_packet &ack_pkt) override;
 

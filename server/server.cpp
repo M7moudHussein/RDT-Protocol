@@ -154,10 +154,10 @@ void server::handle_worker_thread(sockaddr_in client_address, std::string file_p
 
     switch (this->server_mode) {
         case STOP_AND_WAIT:
-            rdt = new selective_repeat_strategy(file_path, 1);
+            rdt = new selective_repeat_strategy(file_path, 1, 1);
             break;
         case SELECTIVE_REPEAT:
-            rdt = new selective_repeat_strategy(file_path);
+            rdt = new selective_repeat_strategy(file_path, MAX_WINDOW_SIZE);
             break;
         case GO_BACK_N:
             rdt = new go_back_N_strategy(file_path);

@@ -55,7 +55,10 @@ protected:
     std::set<data_packet *, data_packet::time_comparator> unacked_packets;
     std::mutex set_mutex;
     std::deque<data_packet *> window;
+    std::deque<data_packet *> aux_window;
     int window_size, next_seq_number;
+    int max_window_size;
+    int threshold;
 };
 
 #endif //RDT_PROTOCOL_RDT_STRATEGY_H
