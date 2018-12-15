@@ -9,7 +9,7 @@
 #include "../../shared/packet_util.h"
 #include "../packet_sender.h"
 
-#define DEFAULT_WINDOW_SIZE 1
+#define DEFAULT_WINDOW_SIZE 1000 //TODO just random window size... it should be changed to the right value
 
 selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int max_window_size) { // Selective Repeat
     selective_repeat_strategy::pkt_builder = new packet_builder(std::move(file_name), DEFAULT_WINDOW_SIZE);
@@ -20,7 +20,8 @@ selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int 
     fill_window();
 }
 
-selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int window_size, int max_window_size) { // Stop-and-Wait
+selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int window_size,
+                                                     int max_window_size) { // Stop-and-Wait
     selective_repeat_strategy::pkt_builder = new packet_builder(std::move(file_name), window_size);
     selective_repeat_strategy::next_seq_number = 0;
     selective_repeat_strategy::window_size = window_size;
@@ -114,6 +115,7 @@ void selective_repeat_strategy::handle_time_out() {
                 timer->sleep_until(first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT);
             } else {
                 set_mutex.lock();
+                std::cout << "Number of unacked packets: " << unacked_packets.size() << std::endl;
                 unacked_packets.erase(first_unacked_pkt);
                 set_mutex.unlock();
                 std::cout << "Timeout! Resending packet..." << std::endl;
@@ -133,6 +135,7 @@ void selective_repeat_strategy::send_packet(data_packet *packet) {
     set_mutex.unlock();
     if (triple_dup_ack)
         shrink_window(window_size / 2);
+}
 
 
 void selective_repeat_strategy::advance_window() {
@@ -141,6 +144,7 @@ void selective_repeat_strategy::advance_window() {
         if ((*pkt_iter)->is_acked()) {
             window.pop_front();
             std::cout << "Popped packet " << (*pkt_iter)->get_seqno() << std::endl;
+            delete *pkt_iter;
             pkt_iter = window.begin();
         } else {
             break;

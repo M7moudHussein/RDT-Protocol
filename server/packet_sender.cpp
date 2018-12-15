@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "packet_sender.h"
 #include <functional>
 #include <iostream>
@@ -15,7 +17,7 @@ void packet_sender::set_seed(unsigned int seed) {
 }
 
 void packet_sender::set_loss_sequence(std::vector<int> sequence) {
-    packet_sender::loss_sequence = sequence;
+    packet_sender::loss_sequence = std::move(sequence);
 }
 
 void packet_sender::set_probability(const float loss_probability) {

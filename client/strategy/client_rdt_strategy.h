@@ -28,6 +28,7 @@ public:
 protected:
     sockaddr_in server_address;
     int client_socket;
+    char *buffer;
 
     std::set<data_packet, data_packet::seq_num_comparator> window;
     int window_size;

@@ -3,6 +3,7 @@
 #include "../../shared/packet_util.h"
 
 client_selective_repeat_strategy::client_selective_repeat_strategy(int wnd_size) {
+    buffer = new char[MAX_PKT_SIZE];
     window_size = wnd_size;
     expected_seqno = 0;
     done = false;
@@ -11,7 +12,6 @@ client_selective_repeat_strategy::client_selective_repeat_strategy(int wnd_size)
 void client_selective_repeat_strategy::run() {
     struct sockaddr_in sender_address;
     socklen_t sender_addr_len = sizeof(sender_address);
-    char *buffer = new char[MAX_PKT_SIZE];
 
     ssize_t bytes_received = recvfrom(client_socket, buffer, MAX_PKT_SIZE, MSG_WAITALL,
                                       (struct sockaddr *) &sender_address, &sender_addr_len);
