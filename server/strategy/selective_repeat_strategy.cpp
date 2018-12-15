@@ -31,6 +31,7 @@ selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int 
 }
 
 void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
+    wnd_mutex.lock();
     auto it = window.begin();
     while (it != window.end()) {
         if (ack_pkt.get_ackno() == (*it)->get_seqno()) {
@@ -44,7 +45,6 @@ void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
                 std::cout << "Removed packet with seqno = " << (*it)->get_seqno() << " from timer thread" << std::endl;
                 if (it == window.begin())
                     selective_repeat_strategy::advance_window();
-
                 selective_repeat_strategy::adjust_window_size();
                 selective_repeat_strategy::expand_window();
             }
@@ -52,6 +52,7 @@ void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
         }
         it++;
     }
+    wnd_mutex.unlock();
 }
 
 void selective_repeat_strategy::expand_window() {
@@ -93,6 +94,7 @@ void selective_repeat_strategy::adjust_window_size() {
 }
 
 void selective_repeat_strategy::start() {
+    wnd_mutex.lock();
     auto it = window.begin();
     while (it != window.end()) {
         selective_repeat_strategy::send_packet(*it);
@@ -103,6 +105,7 @@ void selective_repeat_strategy::start() {
         }
         it++;
     }
+    wnd_mutex.unlock();
 }
 
 void selective_repeat_strategy::handle_time_out() {
