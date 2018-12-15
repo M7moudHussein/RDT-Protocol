@@ -26,8 +26,6 @@ public:
 
     std::string get_server_mode();
 
-    loss_mode get_loss_mode();
-
     std::vector<int> get_loss_sequence();
 };
 

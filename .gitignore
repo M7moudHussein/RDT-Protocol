@@ -3,3 +3,4 @@ cmake-build-debug/
 !cmake-build-debug/server.in
 !cmake-build-debug/client.in
 !cmake-build-debug/TEST_DATA
+!cmake-build-debug/output/
