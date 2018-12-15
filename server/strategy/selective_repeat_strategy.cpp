@@ -28,7 +28,6 @@ selective_repeat_strategy::selective_repeat_strategy(std::string file_name) {
 
 void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
     auto it = window.begin();
-    std::cout << "Here " << ack_pkt.get_ackno() << std::endl;
     while (it != window.end()) {
         if (ack_pkt.get_ackno() == (*it)->get_seqno()) {
             // This check is to skip duplicate acks
