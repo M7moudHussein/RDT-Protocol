@@ -13,8 +13,8 @@
 
 selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int max_window_size) { // Selective Repeat
     selective_repeat_strategy::pkt_builder = new packet_builder(std::move(file_name), DEFAULT_WINDOW_SIZE);
-    selective_repeat_strategy::window_size = DEFAULT_WINDOW_SIZE;
     selective_repeat_strategy::next_seq_number = 0;
+    selective_repeat_strategy::window_size = DEFAULT_WINDOW_SIZE;
     selective_repeat_strategy::max_window_size = max_window_size;
     selective_repeat_strategy::threshold = max_window_size / 2;
     fill_window();
@@ -22,8 +22,8 @@ selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int 
 
 selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int window_size, int max_window_size) { // Stop-and-Wait
     selective_repeat_strategy::pkt_builder = new packet_builder(std::move(file_name), window_size);
-    selective_repeat_strategy::window_size = window_size;
     selective_repeat_strategy::next_seq_number = 0;
+    selective_repeat_strategy::window_size = window_size;
     selective_repeat_strategy::max_window_size = max_window_size;
     selective_repeat_strategy::threshold = max_window_size;
     fill_window();
@@ -41,12 +41,12 @@ void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
                 unacked_packets.erase((*it));
                 set_mutex.unlock();
                 std::cout << "Removed packet with seqno = " << (*it)->get_seqno() << " from timer thread" << std::endl;
-                if (it == window.begin()) {
+                if (it == window.begin())
                     selective_repeat_strategy::advance_window();
-                }
+
+                selective_repeat_strategy::adjust_window_size();
+                selective_repeat_strategy::expand_window();
             }
-            selective_repeat_strategy::adjust_window_size();
-            selective_repeat_strategy::expand_window();
             break;
         }
         it++;
@@ -100,7 +100,6 @@ void selective_repeat_strategy::start() {
         }
         it++;
     }
-
 }
 
 void selective_repeat_strategy::handle_time_out() {
@@ -127,12 +126,14 @@ void selective_repeat_strategy::handle_time_out() {
 
 void selective_repeat_strategy::send_packet(data_packet *packet) {
     std::cout << "Sending packet with seqno = " << packet->get_seqno() << std::endl;
-    packet_sender::send_packet(server_socket, client_address, packet);
+    bool triple_dup_ack = packet_sender::send_packet(server_socket, client_address, packet);
     packet->set_time_stamp(std::chrono::steady_clock::now());
     set_mutex.lock();
     unacked_packets.insert(packet);
     set_mutex.unlock();
-}
+    if (triple_dup_ack)
+        shrink_window(window_size / 2);
+
 
 void selective_repeat_strategy::advance_window() {
     auto pkt_iter = window.begin();

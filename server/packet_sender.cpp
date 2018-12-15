@@ -31,7 +31,7 @@ bool packet_sender::send_packet(int server_socket, sockaddr_in client_address, d
         } else {
             std::cout << "Packet with seq no " << packet->get_seqno() << " was lost!" << std::endl;
         }
-        return true;
+        return false;
     } else {
         // Sequence has passed, three duplicate acks detected
         sendto(server_socket, packet->pack().c_str(), packet->pack().length(),
@@ -40,7 +40,7 @@ bool packet_sender::send_packet(int server_socket, sockaddr_in client_address, d
         packet_number = 1;
         loss_sequence_index++;
         loss_sequence_index = loss_sequence_index % (int32_t) packet_sender::loss_sequence.size();
-        return false;
+        return true;
     }
 }
 
