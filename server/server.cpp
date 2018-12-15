@@ -16,8 +16,9 @@ server::server(server_parser serv_parser) : MAX_WINDOW_SIZE(serv_parser.get_max_
 
     packet_sender::set_seed(serv_parser.get_random_seed());
     packet_sender::set_probability(serv_parser.get_loss_probability());
+    packet_sender::set_mode(serv_parser.get_loss_mode());
     packet_sender::set_loss_sequence(serv_parser.get_loss_sequence());
-
+    packet_sender::set_mode(PROBABILITY);
     set_mode(serv_parser.get_server_mode());
     std::cout << "Server listening on port: " << server::port_number << std::endl;
     server::init();
@@ -74,12 +75,12 @@ void server::start() {
         bytes_received = recvfrom(server::socket_fd, buffer, MAX_UDP_BUFFER_SIZE,
                                   MSG_WAITALL, (struct sockaddr *) &client_address,
                                   &client_address_len);
-        std::cout << "Server received " << bytes_received << " bytes" << std::endl;
+//        std::cout << "Server received " << bytes_received << " bytes" << std::endl;
 
         std::string client_address_string = get_address_string(client_address);
         if (server::registered_clients.find(client_address_string) != server::registered_clients.end()) {
             ack_packet ack = ack_packet(buffer);
-
+            std::cout << "Main thread: " << ack.get_ackno() << std::endl;
             // Push received ack in the queue of the thread handling this client
             server::registered_clients_mtx.lock();
             std::thread::id worker_to_ack = server::registered_clients[client_address_string];
@@ -102,35 +103,35 @@ void server::start() {
 }
 
 void server::cleanup_working_threads() {
-    while (true) {
-        server::working_threads_mtx.lock();
-        for (auto it = server::working_threads.cbegin();
-             it != server::working_threads.cend();) {
-            if (it->second->is_done()) {
-                // Removing entry from worker_threads_acks map
-                server::worker_threads_acks_mtx.lock();
-                server::working_threads.erase(it->first);
-                server::worker_threads_acks_mtx.unlock();
-
-                // Removing entry from registered clients map (done in O(n) because tid is value not key)
-                server::registered_clients_mtx.lock();
-                for (auto rc_it = server::registered_clients.cbegin();
-                     rc_it != server::registered_clients.cend();) {
-                    if (rc_it->second == it->first) {
-                        server::registered_clients.erase(rc_it); // delete pointer to it from map
-                        break;
-                    }
-                }
-
-                // Removing entry from working threads map
-                delete it->second; // delete worker thread object
-                server::working_threads.erase(it++); // delete pointer to it from map
-            } else
-                it++;
-        }
-        server::working_threads_mtx.unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(500)); // Sleep for 500 ms
-    }
+//    while (true) {
+//        server::working_threads_mtx.lock();
+//        for (auto it = server::working_threads.cbegin();
+//             it != server::working_threads.cend();) {
+//            if (it->second->is_done()) {
+//                // Removing entry from worker_threads_acks map
+//                server::worker_threads_acks_mtx.lock();
+//                server::working_threads.erase(it->first);
+//                server::worker_threads_acks_mtx.unlock();
+//
+//                // Removing entry from registered clients map (done in O(n) because tid is value not key)
+//                server::registered_clients_mtx.lock();
+//                for (auto rc_it = server::registered_clients.cbegin();
+//                     rc_it != server::registered_clients.cend();) {
+//                    if (rc_it->second == it->first) {
+//                        server::registered_clients.erase(rc_it); // delete pointer to it from map
+//                        break;
+//                    }
+//                }
+//
+//                // Removing entry from working threads map
+//                delete it->second; // delete worker thread object
+//                server::working_threads.erase(it++); // delete pointer to it from map
+//            } else
+//                it++;
+//        }
+//        server::working_threads_mtx.unlock();
+//        std::this_thread::sleep_for(std::chrono::milliseconds(500)); // Sleep for 500 ms
+//    }
 }
 
 void server::dispatch_worker_thread(sockaddr_in client_address, std::string file_path) {
@@ -178,8 +179,8 @@ void server::handle_worker_thread(sockaddr_in client_address, std::string file_p
         while (true) {
             this->worker_threads_acks_mtx.lock();
             if (!this->worker_threads_acks[worker_id].empty()) {
-                std::cout << "ACK received from main thread to worker thread" << std::endl;
                 ack = this->worker_threads_acks[worker_id].front();
+                std::cout << "Worker thread ACK: " << ack.get_ackno() << std::endl;
                 this->worker_threads_acks[worker_id].pop();
                 this->worker_threads_acks_mtx.unlock();
                 break;

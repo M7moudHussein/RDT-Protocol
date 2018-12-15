@@ -8,6 +8,7 @@
 
 #include <string>
 #include <vector>
+#include "../packet_sender.h"
 
 class server_parser {
 private:
@@ -24,6 +25,8 @@ public:
     float get_loss_probability();
 
     std::string get_server_mode();
+
+    loss_mode get_loss_mode();
 
     std::vector<int> get_loss_sequence();
 };

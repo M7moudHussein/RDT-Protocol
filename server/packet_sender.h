@@ -9,7 +9,7 @@
 
 enum loss_mode {
     PROBABILITY,
-    SEQUENTIAL
+    WITH_SEQUENCE
 };
 
 class packet_sender {
@@ -20,12 +20,12 @@ public:
 
     static void set_probability(float loss_probability);
 
-    static void send_packet(int server_socket, sockaddr_in client_socket, data_packet *packet);
+    static void send_packet(int server_socket, sockaddr_in client_address, data_packet *packet);
 
     static void set_loss_sequence(std::vector<int> sequence);
 
 private:
-    static int packet_number;
+    static uint64_t packet_number;
     static int loss_sequence_index;
     static std::vector<int> loss_sequence;
     static loss_mode mode;
