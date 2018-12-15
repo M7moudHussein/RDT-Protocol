@@ -9,7 +9,7 @@
 
 enum loss_mode {
     PROBABILITY,
-    SEQUENTIAL
+    WITH_SEQUENCE
 };
 
 class packet_sender {
@@ -25,7 +25,7 @@ public:
     static void set_loss_sequence(std::vector<int> sequence);
 
 private:
-    static int packet_number;
+    static uint64_t packet_number;
     static int loss_sequence_index;
     static std::vector<int> loss_sequence;
     static loss_mode mode;

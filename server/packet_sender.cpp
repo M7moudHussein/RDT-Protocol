@@ -5,9 +5,9 @@
 float packet_sender::loss_probability;
 std::minstd_rand0 packet_sender::generator;
 std::uniform_real_distribution<double> packet_sender::distribution;
-loss_mode packet_sender::mode;
+loss_mode packet_sender::mode = PROBABILITY;
 int packet_sender::loss_sequence_index = 0;
-int packet_sender::packet_number = 0;
+uint64_t packet_sender::packet_number = 1;
 std::vector<int> packet_sender::loss_sequence;
 
 void packet_sender::set_mode(loss_mode mode) {
@@ -24,7 +24,7 @@ void packet_sender::set_loss_sequence(std::vector<int> sequence) {
 }
 
 void packet_sender::set_probability(const float loss_probability) {
-    packet_sender::loss_probability = loss_probability;
+    packet_sender::loss_probability = loss_probability * 100;
 }
 
 void packet_sender::send_packet(int server_socket, sockaddr_in client_address, data_packet *packet) {
@@ -35,15 +35,19 @@ void packet_sender::send_packet(int server_socket, sockaddr_in client_address, d
                        MSG_CONFIRM, (const struct sockaddr *) &client_address,
                        sizeof(client_address));
             } else {
-                std::cout << "Loss occurred for packet = " << packet->get_seqno() << std::endl;
+                std::cout << "Packet with seq no " << packet->get_seqno() << " was lost!" << std::endl;
             }
             break;
-        case SEQUENTIAL:
-            if (packet_number++ % packet_sender::loss_sequence[loss_sequence_index] == 0) {
-                loss_sequence_index = loss_sequence_index++ % packet_sender::loss_sequence.size();
+        case WITH_SEQUENCE:
+            if (packet_number++ % packet_sender::loss_sequence[loss_sequence_index] != 0) {
                 sendto(server_socket, packet->pack().c_str(), packet->pack().length(),
                        MSG_CONFIRM, (const struct sockaddr *) &client_address,
                        sizeof(client_address));
+            } else {
+                std::cout << "Packet with seq no " << packet->get_seqno() << " was lost!" << std::endl;
+                packet_number = 1;
+                loss_sequence_index++;
+                loss_sequence_index = loss_sequence_index % (int32_t) packet_sender::loss_sequence.size();
             }
             break;
     }

@@ -28,9 +28,13 @@ std::string server_parser::get_server_mode() {
     return server_parser::server_args[4];
 }
 
+loss_mode server_parser::get_loss_mode() {
+    return server_parser::server_args[5] == "PROBABILITY" ? PROBABILITY : WITH_SEQUENCE;
+}
+
 std::vector<int> server_parser::get_loss_sequence() {
     std::vector<int> loss_sequence;
-    for (int i = 5; i < server_parser::server_args.size(); i++) {
+    for (int i = 6; i < server_parser::server_args.size(); i++) {
         loss_sequence.push_back(std::stoi(server_parser::server_args[i]));
     }
     return loss_sequence;

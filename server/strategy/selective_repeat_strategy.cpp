@@ -76,9 +76,15 @@ void selective_repeat_strategy::handle_time_out() {
                 timer->sleep_until(first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT);
             } else {
                 set_mutex.lock();
+
+                std::string unacked_packets_list;
                 for (auto pkt : unacked_packets) {
-                    std::cout << "Packet : " << pkt->get_seqno() << " is acked: " << pkt->is_acked() << std::endl;
+                    unacked_packets_list += std::to_string(pkt->get_seqno()) + ", ";
                 }
+                unacked_packets_list.pop_back(), unacked_packets_list.pop_back();
+
+                std::cout << "Unacked packets: " << unacked_packets_list << std::endl;
+
                 unacked_packets.erase(first_unacked_pkt);
                 set_mutex.unlock();
                 std::cout << "Timeout! Resending packet..." << std::endl;
