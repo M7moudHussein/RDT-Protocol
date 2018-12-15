@@ -126,8 +126,8 @@ void selective_repeat_strategy::handle_time_out() {
                 std::cout << "Timeout! Resending packet..." << std::endl;
                 wnd_mutex.lock();
                 shrink_window(1);
-                wnd_mutex.unlock();
                 selective_repeat_strategy::send_packet(first_unacked_pkt);
+                wnd_mutex.unlock();
             }
         }
     }
@@ -140,7 +140,7 @@ void selective_repeat_strategy::send_packet(data_packet *packet) {
     set_mutex.lock();
     unacked_packets.insert(packet);
     set_mutex.unlock();
-    if (triple_dup_ack){
+    if (triple_dup_ack) {
         shrink_window(window_size / 2);
     }
 }
