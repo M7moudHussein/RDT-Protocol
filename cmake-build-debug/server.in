@@ -1,8 +1,8 @@
 8080
 10
 0
-0.1
+0.9
 selective_repeat
-WITH_SEQUENCE
+PROBABILITY
 1
 2
