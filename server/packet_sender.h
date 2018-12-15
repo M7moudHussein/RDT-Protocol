@@ -9,7 +9,7 @@
 
 enum loss_mode {
     PROBABILITY,
-    SEQUENTIAL
+    WITH_SEQUENCE
 };
 
 class packet_sender {

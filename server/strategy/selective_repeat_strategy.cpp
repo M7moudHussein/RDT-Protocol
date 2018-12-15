@@ -7,6 +7,7 @@
 
 #include "selective_repeat_strategy.h"
 #include "../../shared/packet_util.h"
+#include "../packet_sender.h"
 
 #define DEFAULT_WINDOW_SIZE 10 //TODO just random window size... it should be changed to the right value
 
@@ -73,9 +74,15 @@ void selective_repeat_strategy::handle_time_out() {
                 timer->sleep_until(first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT);
             } else {
                 set_mutex.lock();
+
+                std::string unacked_packets_list;
                 for (auto pkt : unacked_packets) {
-                    std::cout << "Packet : " << pkt->get_seqno() << " is acked: " << pkt->is_acked() << std::endl;
+                    unacked_packets_list += std::to_string(pkt->get_seqno()) + ", ";
                 }
+                unacked_packets_list.pop_back(), unacked_packets_list.pop_back();
+
+                std::cout << "Unacked packets: " << unacked_packets_list << std::endl;
+
                 unacked_packets.erase(first_unacked_pkt);
                 set_mutex.unlock();
                 std::cout << "Timeout! Resending packet..." << std::endl;
@@ -87,9 +94,10 @@ void selective_repeat_strategy::handle_time_out() {
 
 void selective_repeat_strategy::send_packet(data_packet *packet) {
     std::cout << "Sending packet with seqno = " << packet->get_seqno() << std::endl;
-    sendto(server_socket, packet->pack().c_str(), packet->pack().length(),
-           MSG_CONFIRM, (const struct sockaddr *) &client_address,
-           sizeof client_address);
+    packet_sender::send_packet(server_socket, client_address, packet);
+//    sendto(server_socket, packet->pack().c_str(), packet->pack().length(),
+//           MSG_CONFIRM, (const struct sockaddr *) &client_address,
+//           sizeof client_address);
     packet->set_time_stamp(std::chrono::steady_clock::now());
     set_mutex.lock();
     unacked_packets.insert(packet);

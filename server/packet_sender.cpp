@@ -1,10 +1,11 @@
 #include "packet_sender.h"
 #include <functional>
+#include <iostream>
 
 float packet_sender::loss_probability;
 std::minstd_rand0 packet_sender::generator;
 std::uniform_real_distribution<double> packet_sender::distribution;
-loss_mode packet_sender::mode;
+loss_mode packet_sender::mode = PROBABILITY;
 int packet_sender::loss_sequence_index = 0;
 int packet_sender::packet_number = 0;
 std::vector<int> packet_sender::loss_sequence;
@@ -23,19 +24,20 @@ void packet_sender::set_loss_sequence(std::vector<int> sequence) {
 }
 
 void packet_sender::set_probability(const float loss_probability) {
-    packet_sender::loss_probability = loss_probability;
+    packet_sender::loss_probability = loss_probability * 100;
 }
 
 void packet_sender::send_packet(int server_socket, sockaddr_in client_socket, data_packet *packet) {
     switch (packet_sender::mode) {
         case PROBABILITY:
             if (packet_sender::distribution(packet_sender::generator) > loss_probability) {
+                std::cout << "Sending packet with seq No. : " << packet->get_seqno() << std::endl;
                 sendto(server_socket, packet->pack().c_str(), packet->pack().length(),
                        MSG_CONFIRM, (const struct sockaddr *) &client_socket,
                        sizeof(client_socket));
             }
             break;
-        case SEQUENTIAL:
+        case WITH_SEQUENCE:
             if (packet_number++ % packet_sender::loss_sequence[loss_sequence_index] == 0) {
                 loss_sequence_index = loss_sequence_index++ % packet_sender::loss_sequence.size();
                 sendto(server_socket, packet->pack().c_str(), packet->pack().length(),
