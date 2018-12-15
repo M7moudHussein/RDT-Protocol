@@ -17,7 +17,6 @@ server::server(server_parser serv_parser) : MAX_WINDOW_SIZE(serv_parser.get_max_
     packet_sender::set_seed(serv_parser.get_random_seed());
     packet_sender::set_probability(serv_parser.get_loss_probability());
     std::cout << serv_parser.get_loss_probability() << std::endl;
-    packet_sender::set_mode(serv_parser.get_loss_mode());
     packet_sender::set_loss_sequence(serv_parser.get_loss_sequence());
 
     set_mode(serv_parser.get_server_mode());
