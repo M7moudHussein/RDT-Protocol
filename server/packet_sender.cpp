@@ -1,5 +1,6 @@
 #include "packet_sender.h"
 #include <functional>
+#include <iostream>
 
 float packet_sender::loss_probability;
 std::minstd_rand0 packet_sender::generator;
@@ -26,21 +27,23 @@ void packet_sender::set_probability(const float loss_probability) {
     packet_sender::loss_probability = loss_probability;
 }
 
-void packet_sender::send_packet(int server_socket, sockaddr_in client_socket, data_packet *packet) {
+void packet_sender::send_packet(int server_socket, sockaddr_in client_address, data_packet *packet) {
     switch (packet_sender::mode) {
         case PROBABILITY:
             if (packet_sender::distribution(packet_sender::generator) > loss_probability) {
                 sendto(server_socket, packet->pack().c_str(), packet->pack().length(),
-                       MSG_CONFIRM, (const struct sockaddr *) &client_socket,
-                       sizeof(client_socket));
+                       MSG_CONFIRM, (const struct sockaddr *) &client_address,
+                       sizeof(client_address));
+            } else {
+                std::cout << "Loss occurred for packet = " << packet->get_seqno() << std::endl;
             }
             break;
         case SEQUENTIAL:
             if (packet_number++ % packet_sender::loss_sequence[loss_sequence_index] == 0) {
                 loss_sequence_index = loss_sequence_index++ % packet_sender::loss_sequence.size();
                 sendto(server_socket, packet->pack().c_str(), packet->pack().length(),
-                       MSG_CONFIRM, (const struct sockaddr *) &client_socket,
-                       sizeof(client_socket));
+                       MSG_CONFIRM, (const struct sockaddr *) &client_address,
+                       sizeof(client_address));
             }
             break;
     }

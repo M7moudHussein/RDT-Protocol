@@ -20,7 +20,7 @@ public:
 
     static void set_probability(float loss_probability);
 
-    static void send_packet(int server_socket, sockaddr_in client_socket, data_packet *packet);
+    static void send_packet(int server_socket, sockaddr_in client_address, data_packet *packet);
 
     static void set_loss_sequence(std::vector<int> sequence);
 
