@@ -33,6 +33,7 @@ selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int 
 void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
     wnd_mutex.lock();
     auto it = window.begin();
+
     while (it != window.end()) {
         if (ack_pkt.get_ackno() == (*it)->get_seqno()) {
             // This check is to skip duplicate acks
@@ -42,9 +43,10 @@ void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
                 set_mutex.lock();
                 unacked_packets.erase((*it));
                 set_mutex.unlock();
-//                std::cout << "Removed packet with seqno = " << (*it)->get_seqno() << " from timer thread" << std::endl;
-                if (it == window.begin())
+                std::cout << "Removed packet with seqno = " << (*it)->get_seqno() << " from timer thread" << std::endl;
+                if (it == window.begin()) {
                     selective_repeat_strategy::advance_window();
+                }
                 selective_repeat_strategy::adjust_window_size();
                 selective_repeat_strategy::expand_window();
             }
@@ -65,12 +67,16 @@ void selective_repeat_strategy::expand_window() {
         } else {
             pkt = pkt_builder->get_next_packet(next_seq_number);
         }
+        if (window.empty() && pkt->is_acked()) {
+            continue;
+        }
         window.push_back(pkt);
         selective_repeat_strategy::send_packet(pkt);
     }
 }
 
 void selective_repeat_strategy::shrink_window(int new_size) {
+    std::cout << "SHRINKING................." << std::endl;
     int new_threshold = window_size / 2;
     threshold = new_threshold < 1 ? 1 : new_threshold;
     window_size = new_size;
@@ -78,7 +84,9 @@ void selective_repeat_strategy::shrink_window(int new_size) {
     auto it = window.begin() + window_size;
     while (it != window.end()) {
         aux_window.push_back(*it);
+        set_mutex.lock();
         unacked_packets.erase(*it);
+        set_mutex.unlock();
         it = window.erase(it);
     }
 }
@@ -116,11 +124,18 @@ void selective_repeat_strategy::handle_time_out() {
             data_packet *first_unacked_pkt = *(unacked_packets.begin());
             set_mutex.unlock();
             if (std::chrono::steady_clock::now() < first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT) {
-                std::cout << "Timer thread sleeping for 5 seconds..." << std::endl;
+//                std::cout << "Timer thread sleeping for 5 seconds..." << std::endl;
                 timer->sleep_until(first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT);
             } else {
                 set_mutex.lock();
-                std::cout << "Number of unacked packets: " << unacked_packets.size() << std::endl;
+                std::string unacked_packets_list;
+                for (auto pkt : unacked_packets) {
+                    unacked_packets_list += std::to_string(pkt->get_seqno()) + ", ";
+                }
+                unacked_packets_list.pop_back(), unacked_packets_list.pop_back();
+
+                std::cout << "Unacked packets: " << unacked_packets_list << std::endl;
+
                 unacked_packets.erase(first_unacked_pkt);
                 set_mutex.unlock();
                 std::cout << "Timeout! Resending packet..." << std::endl;
@@ -151,7 +166,7 @@ void selective_repeat_strategy::advance_window() {
     while (!window.empty()) {
         if ((*pkt_iter)->is_acked()) {
             window.pop_front();
-            std::cout << "Popped packet " << (*pkt_iter)->get_seqno() << std::endl;
+            std::cout << "Popped packet " << (*pkt_iter)->get_seqno() << " from window" << std::endl;
             delete *pkt_iter;
             pkt_iter = window.begin();
         } else {

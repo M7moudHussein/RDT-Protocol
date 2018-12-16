@@ -33,8 +33,11 @@ void client_selective_repeat_strategy::run() {
             std::cout << "Sending ACK for packet with seq no: " << packet_received.get_seqno() << std::endl;
             send_ack(new ack_packet(packet_received.get_seqno())); // send ACK for received packet
         }
-    } else if (seqno >= expected_seqno - window_size && seqno < expected_seqno) { // in the previous window
+    } else if (seqno < expected_seqno) { // in the previous window
+        std::cout << "Packet: " << seqno << " was in a previous window" << std::endl;
         send_ack(new ack_packet(packet_received.get_seqno())); // packet already received and ACKed -> resend ACK for it
+    } else {
+        std::cout << "Packet: " << seqno << " is after window." << std::endl;
     }
 }
 
