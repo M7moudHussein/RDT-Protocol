@@ -80,7 +80,7 @@ void client::set_mode(string mode_str) {
 
 string client::create_req_datagram() {
     string data = parser.get_req_file_name();
-    std::cout << "Data here fams: " << data << std::endl;
+    std::cout << "Filename requested: " << data << std::endl;
     data_packet *pkt = new data_packet(data, 0);
     return pkt->pack();
 }
@@ -140,7 +140,8 @@ void client::receive_datagrams() {
     rdt->set_server_address(server_addr);
 
     // open file to write requested file data in
-    file_writer::open(parser.get_req_file_name());
+//    file_writer::open(parser.get_req_file_name());
+    file_writer::open("output.txt");
 
     while (!rdt->is_done())
         rdt->run();

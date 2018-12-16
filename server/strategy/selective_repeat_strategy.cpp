@@ -9,7 +9,7 @@
 #include "../../shared/packet_util.h"
 #include "../packet_sender.h"
 
-#define DEFAULT_WINDOW_SIZE 1000 //TODO just random window size... it should be changed to the right value
+#define DEFAULT_WINDOW_SIZE 1 //TODO just random window size... it should be changed to the right value
 
 selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int max_window_size) { // Selective Repeat
     selective_repeat_strategy::pkt_builder = new packet_builder(std::move(file_name), DEFAULT_WINDOW_SIZE);
@@ -37,12 +37,12 @@ void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
         if (ack_pkt.get_ackno() == (*it)->get_seqno()) {
             // This check is to skip duplicate acks
             if (!(*it)->is_acked()) {
-                std::cout << "Acknowledging packet with seqno = " << (*it)->get_seqno() << std::endl;
+                std::cout << "Ack received for packet with seqno = " << (*it)->get_seqno() << std::endl;
                 (*it)->ack();
                 set_mutex.lock();
                 unacked_packets.erase((*it));
                 set_mutex.unlock();
-                std::cout << "Removed packet with seqno = " << (*it)->get_seqno() << " from timer thread" << std::endl;
+//                std::cout << "Removed packet with seqno = " << (*it)->get_seqno() << " from timer thread" << std::endl;
                 if (it == window.begin())
                     selective_repeat_strategy::advance_window();
                 selective_repeat_strategy::adjust_window_size();
@@ -57,7 +57,7 @@ void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
 
 void selective_repeat_strategy::expand_window() {
     while (window.size() < window_size && (!aux_window.empty() || pkt_builder->has_next())) {
-        std::cout << "pkt builder has next, sending next..." << std::endl;
+//        std::cout << "pkt builder has next, sending next..." << std::endl;
         data_packet *pkt;
         if (!aux_window.empty()) {
             pkt = aux_window.front();

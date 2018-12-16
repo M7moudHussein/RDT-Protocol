@@ -78,7 +78,7 @@ void server::start() {
         std::string client_address_string = get_address_string(client_address);
         if (server::registered_clients.find(client_address_string) != server::registered_clients.end()) {
             ack_packet ack = ack_packet(buffer);
-            std::cout << "Main thread: " << ack.get_ackno() << std::endl;
+//            std::cout << "Main thread: " << ack.get_ackno() << std::endl;
             // Push received ack in the queue of the thread handling this client
             server::registered_clients_mtx.lock();
             std::thread::id worker_to_ack = server::registered_clients[client_address_string];
@@ -178,7 +178,7 @@ void server::handle_worker_thread(sockaddr_in client_address, std::string file_p
             this->worker_threads_acks_mtx.lock();
             if (!this->worker_threads_acks[worker_id].empty()) {
                 ack = this->worker_threads_acks[worker_id].front();
-                std::cout << "Worker thread ACK: " << ack.get_ackno() << std::endl;
+//                std::cout << "Worker thread ACK: " << ack.get_ackno() << std::endl;
                 this->worker_threads_acks[worker_id].pop();
                 this->worker_threads_acks_mtx.unlock();
                 break;
