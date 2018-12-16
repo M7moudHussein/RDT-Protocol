@@ -1,6 +1,8 @@
 8080
 20
 0
-0.00001
-selective_repeat
-1000000
+0.05
+stop_and_wait
+10
+40
+100

@@ -18,7 +18,7 @@ set(SERVER_SOURCE_FILES
         server/timer_thread.cpp
         server/timer_thread.h
         server/packet_sender.h
-        server/packet_sender.cpp)
+        server/packet_sender.cpp server/strategy/stop_and_wait_strategy.cpp server/strategy/stop_and_wait_strategy.h)
 
 set(CLIENT_SOURCE_FILES
         client/parser/client_parser.cpp

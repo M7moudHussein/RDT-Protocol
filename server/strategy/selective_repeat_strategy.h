@@ -11,8 +11,6 @@ class selective_repeat_strategy : public rdt_strategy {
 public:
     explicit selective_repeat_strategy(std::string file_name, int max_window_size);
 
-    explicit selective_repeat_strategy(std::string file_name, int window_size, int max_window_size);
-
     void acknowledge_packet(ack_packet &ack_pkt) override;
 
     void start() override;
@@ -24,11 +22,11 @@ private:
 
     void advance_window() override;
 
-    void expand_window() override;
+    void expand_window();
 
-    void shrink_window(int new_size) override;
+    void shrink_window(int new_size);
 
-    void adjust_window_size() override;
+    void adjust_window_size();
 };
 
 

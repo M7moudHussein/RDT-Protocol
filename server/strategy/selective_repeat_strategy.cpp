@@ -20,16 +20,6 @@ selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int 
     fill_window();
 }
 
-selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int window_size,
-                                                     int max_window_size) { // Stop-and-Wait
-    selective_repeat_strategy::pkt_builder = new packet_builder(std::move(file_name), window_size);
-    selective_repeat_strategy::next_seq_number = 0;
-    selective_repeat_strategy::window_size = window_size;
-    selective_repeat_strategy::max_window_size = max_window_size;
-    selective_repeat_strategy::threshold = max_window_size;
-    fill_window();
-}
-
 void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
     wnd_mutex.lock();
     auto it = window.begin();

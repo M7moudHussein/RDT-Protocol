@@ -7,6 +7,7 @@
 #include "strategy/rdt_strategy.h"
 #include "strategy/selective_repeat_strategy.h"
 #include "strategy/go_back_N_strategy.h"
+#include "strategy/stop_and_wait_strategy.h"
 
 #define MAX_UDP_BUFFER_SIZE 65536
 
@@ -153,7 +154,7 @@ void server::handle_worker_thread(sockaddr_in client_address, std::string file_p
 
     switch (this->server_mode) {
         case STOP_AND_WAIT:
-            rdt = new selective_repeat_strategy(file_path, 1, 1);
+            rdt = new stop_and_wait_strategy(file_path,1,1);
             break;
         case SELECTIVE_REPEAT:
             rdt = new selective_repeat_strategy(file_path, MAX_WINDOW_SIZE);

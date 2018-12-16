@@ -141,7 +141,7 @@ void client::receive_datagrams() {
 
     // open file to write requested file data in
 //    file_writer::open(parser.get_req_file_name());
-    file_writer::open("output.txt");
+    file_writer::open("output");
 
     while (!rdt->is_done())
         rdt->run();
