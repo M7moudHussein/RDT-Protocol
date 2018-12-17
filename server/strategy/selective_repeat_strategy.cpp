@@ -49,7 +49,6 @@ void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
 
 void selective_repeat_strategy::expand_window() {
     while (window.size() < window_size && (!aux_window.empty() || pkt_builder->has_next())) {
-//        std::cout << "pkt builder has next, sending next..." << std::endl;
         data_packet *pkt;
         if (!aux_window.empty()) {
             pkt = aux_window.front();
