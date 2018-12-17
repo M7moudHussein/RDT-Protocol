@@ -81,8 +81,8 @@ void data_packet::unpack(std::string buf) {
     data = buf.substr(8, len - HEADER_SIZE);
 }
 
-void data_packet::ack() {
-    acked = true;
+void data_packet::set_ack(bool acked) {
+    data_packet::acked = acked;
 }
 
 bool data_packet::is_acked() {

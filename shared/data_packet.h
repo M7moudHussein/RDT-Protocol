@@ -23,7 +23,7 @@ public:
 
     void unpack(std::string);
 
-    void ack();
+    void set_ack(bool acked);
 
     bool is_acked();
 

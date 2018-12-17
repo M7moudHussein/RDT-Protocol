@@ -39,7 +39,7 @@ void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
             // This check is to skip duplicate acks
             if (!(*it)->is_acked()) {
                 std::cout << "Ack received for packet with seqno = " << (*it)->get_seqno() << std::endl;
-                (*it)->ack();
+                (*it)->set_ack(true);
                 set_mutex.lock();
                 unacked_packets.erase((*it));
                 set_mutex.unlock();
@@ -67,9 +67,7 @@ void selective_repeat_strategy::expand_window() {
         } else {
             pkt = pkt_builder->get_next_packet(next_seq_number);
         }
-        if (window.empty() && pkt->is_acked()) {
-            continue;
-        }
+        pkt->set_ack(false);
         window.push_back(pkt);
         selective_repeat_strategy::send_packet(pkt);
     }
@@ -138,10 +136,21 @@ void selective_repeat_strategy::handle_time_out() {
 
                 unacked_packets.erase(first_unacked_pkt);
                 set_mutex.unlock();
+
+                wnd_mutex.lock();
+                std::string window_packets_list;
+                for (auto pkt : window) {
+                    window_packets_list += std::to_string(pkt->get_seqno()) + ", ";
+                }
+                window_packets_list.pop_back(), window_packets_list.pop_back();
+
+                std::cout << "Window packets: " << window_packets_list << std::endl;
+                wnd_mutex.unlock();
+
                 std::cout << "Timeout! Resending packet..." << std::endl;
                 wnd_mutex.lock();
                 shrink_window(1);
-                selective_repeat_strategy::send_packet(first_unacked_pkt);
+                selective_repeat_strategy::send_packet(*(window.begin()));
                 wnd_mutex.unlock();
             }
         }

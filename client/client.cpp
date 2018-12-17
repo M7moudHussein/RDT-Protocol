@@ -140,8 +140,8 @@ void client::receive_datagrams() {
     rdt->set_server_address(server_addr);
 
     // open file to write requested file data in
-//    file_writer::open(parser.get_req_file_name());
-    file_writer::open("output.txt");
+    file_writer::open(parser.get_req_file_name());
+//    file_writer::open("output.txt");
 
     while (!rdt->is_done())
         rdt->run();

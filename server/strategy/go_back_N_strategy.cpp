@@ -57,7 +57,7 @@ void go_back_N_strategy::acknowledge_packet(ack_packet &ack_pkt) {
             set_mutex.lock();
             auto back_it = it;
             while (back_it >= window.begin()) {
-                (*back_it)->ack();
+                (*back_it)->set_ack(true);
                 unacked_packets.erase((*back_it));
                 it--;
             }

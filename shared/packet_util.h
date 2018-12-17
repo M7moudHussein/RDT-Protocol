@@ -10,7 +10,7 @@
 #define MAX_PKT_SIZE 508
 
 namespace packet_util {
-    const std::chrono::seconds PACKET_TIME_OUT = std::chrono::seconds(5);
+    const std::chrono::seconds PACKET_TIME_OUT = std::chrono::seconds(1);
 
     uint16_t calculate_checksum(data_packet *packet);
     uint16_t calculate_checksum(ack_packet *packet);
