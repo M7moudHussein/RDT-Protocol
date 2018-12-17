@@ -21,30 +21,30 @@ selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int 
 }
 
 void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
-    wnd_mutex.lock();
-    auto it = window.begin();
+    if (ack_pkt.get_cksum() == packet_util::calculate_checksum(&ack_pkt)) {
+        wnd_mutex.lock();
+        auto it = window.begin();
+        while (it != window.end()) {
+            if (ack_pkt.get_ackno() == (*it)->get_seqno()) {
+                if (!(*it)->is_acked()) { // skip duplicate ACKs
+                    std::cout << "Ack received for packet with seqno = " << (*it)->get_seqno() << std::endl;
+                    (*it)->ack();
+                    set_mutex.lock();
+                    unacked_packets.erase((*it));
+                    set_mutex.unlock();
+                    std::cout << "Removed packet with seqno = " << (*it)->get_seqno() << " from timer thread" << std::endl;
+                    if (it == window.begin())
+                        selective_repeat_strategy::advance_window();
 
-    while (it != window.end()) {
-        if (ack_pkt.get_ackno() == (*it)->get_seqno()) {
-            // This check is to skip duplicate acks
-            if (!(*it)->is_acked()) {
-                std::cout << "Ack received for packet with seqno = " << (*it)->get_seqno() << std::endl;
-                (*it)->ack();
-                set_mutex.lock();
-                unacked_packets.erase((*it));
-                set_mutex.unlock();
-                std::cout << "Removed packet with seqno = " << (*it)->get_seqno() << " from timer thread" << std::endl;
-                if (it == window.begin()) {
-                    selective_repeat_strategy::advance_window();
+                    selective_repeat_strategy::adjust_window_size();
+                    selective_repeat_strategy::expand_window();
                 }
-                selective_repeat_strategy::adjust_window_size();
-                selective_repeat_strategy::expand_window();
+                break;
             }
-            break;
+            it++;
         }
-        it++;
+        wnd_mutex.unlock();
     }
-    wnd_mutex.unlock();
 }
 
 void selective_repeat_strategy::expand_window() {
