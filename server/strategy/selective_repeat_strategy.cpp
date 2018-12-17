@@ -51,8 +51,8 @@ void selective_repeat_strategy::expand_window() {
     while (window.size() < window_size && (!aux_window.empty() || pkt_builder->has_next())) {
         data_packet *pkt;
         if (!aux_window.empty()) {
-            pkt = aux_window.front();
-            aux_window.pop_front();
+            pkt = *(aux_window.begin());
+            aux_window.erase(aux_window.begin());
         } else {
             pkt = pkt_builder->get_next_packet(next_seq_number);
         }
@@ -70,12 +70,17 @@ void selective_repeat_strategy::shrink_window(int new_size) {
 
     auto it = window.begin() + window_size;
     while (it != window.end()) {
-        aux_window.push_back(*it);
+        aux_window.insert(*it);
         set_mutex.lock();
         unacked_packets.erase(*it);
         set_mutex.unlock();
         it = window.erase(it);
     }
+//    std::cout << "Aux window: ";
+//    for (auto p : aux_window) {
+//        std::cout << p->get_seqno() << " ";
+//    }
+    std::cout << std::endl;
 }
 
 void selective_repeat_strategy::adjust_window_size() {

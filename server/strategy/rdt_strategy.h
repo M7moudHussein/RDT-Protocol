@@ -56,7 +56,7 @@ protected:
     std::mutex set_mutex;
     std::mutex wnd_mutex;
     std::deque<data_packet *> window;
-    std::deque<data_packet *> aux_window;
+    std::set<data_packet *, data_packet::ptr_seq_num_comparator> aux_window;
     uint32_t next_seq_number;
     int window_size;
     int max_window_size;
