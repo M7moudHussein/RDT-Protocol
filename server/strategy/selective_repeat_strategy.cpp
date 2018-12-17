@@ -1,12 +1,7 @@
 #include <utility>
 #include <iostream>
-
-//
-// Created by mahmoud on 12/7/18.
-//
-
+#include <fstream>
 #include "selective_repeat_strategy.h"
-#include "../../shared/packet_util.h"
 #include "../packet_sender.h"
 
 #define DEFAULT_WINDOW_SIZE 1
@@ -21,6 +16,7 @@ selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int 
 }
 
 void selective_repeat_strategy::acknowledge_packet(ack_packet &ack_pkt) {
+    window_size_history.push_back(window_size);
     if (ack_pkt.get_cksum() == packet_util::calculate_checksum(&ack_pkt)) {
         wnd_mutex.lock();
         auto it = window.begin();
@@ -97,6 +93,7 @@ void selective_repeat_strategy::adjust_window_size() {
 }
 
 void selective_repeat_strategy::start() {
+    start_time_stamp = std::chrono::steady_clock::now();
     wnd_mutex.lock();
     auto it = window.begin();
     while (it != window.end()) {
@@ -174,6 +171,7 @@ void selective_repeat_strategy::advance_window() {
             window.pop_front();
             std::cout << "Popped packet " << (*pkt_iter)->get_seqno() << " from window" << std::endl;
             delete *pkt_iter;
+            packets_sent++;
             pkt_iter = window.begin();
         } else {
             break;

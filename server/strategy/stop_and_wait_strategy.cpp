@@ -94,8 +94,10 @@ void stop_and_wait_strategy::advance_window() {
     auto pkt_iter = window.begin();
     while (!window.empty()) {
         if ((*pkt_iter)->is_acked()) {
+            packets_sent++;
             window.pop_front();
             std::cout << "Popped packet " << (*pkt_iter)->get_seqno() << std::endl;
+            delete *pkt_iter;
             pkt_iter = window.begin();
             if (pkt_builder->has_next()) {
                 std::cout << "pkt builder has next, sending next..." << std::endl;

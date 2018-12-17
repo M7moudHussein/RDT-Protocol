@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <thread>
 #include <sstream>
+#include <fstream>
 #include "../../shared/ack_packet.h"
 #include "../filereader/packet_builder.h"
 #include "../timer_thread.h"
@@ -23,6 +24,18 @@ public:
     }
 
     bool is_done() {
+        if (window.empty()) {
+            std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+            auto time_spent = std::chrono::duration_cast<std::chrono::milliseconds>(end - start_time_stamp).count();
+
+            std::ofstream stats_file;
+            stats_file.open("stats.txt");
+            for (auto wz: window_size_history)
+                stats_file << wz << std::endl;
+            stats_file << "Packets sent: " << packets_sent << std::endl;
+            stats_file << "Time spent: " << time_spent << "msec" << std::endl;
+            stats_file.close();
+        }
         return this->window.empty();
     }
 
@@ -36,6 +49,10 @@ public:
 
 
 protected:
+    std::vector<int> window_size_history;
+    uint32_t packets_sent = 0;
+    std::chrono::steady_clock::time_point start_time_stamp;
+
     void fill_window() {
         while (window.size() < window_size && pkt_builder->has_next()) {
             window.push_back(pkt_builder->get_next_packet(next_seq_number));
