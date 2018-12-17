@@ -7,6 +7,7 @@
 
 #include "go_back_N_strategy.h"
 #include "../../shared/packet_util.h"
+#include "../packet_sender.h"
 
 #define DEFAULT_WINDOW_SIZE 200
 
@@ -32,7 +33,7 @@ void go_back_N_strategy::handle_time_out() {
         set_mutex.lock();
         data_packet *first_unacked_pkt = *(unacked_packets.begin());
         set_mutex.unlock();
-        if (first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT < std::chrono::steady_clock::now()) {
+        if (std::chrono::steady_clock::now() < first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT) {
             std::cout << "Timer thread sleeping for 1 seconds..." << std::endl;
             timer->sleep_until(first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT);
         } else {
@@ -65,7 +66,7 @@ void go_back_N_strategy::acknowledge_packet(ack_packet &ack_pkt) {
                 unacked_packets.erase((*back_it));
                 std::cout << "Removed packet with seqno = " << (*back_it)->get_seqno() << " from timer thread"
                           << std::endl;
-                it--;
+                back_it--;
             }
             set_mutex.unlock();
             go_back_N_strategy::advance_window();
@@ -76,9 +77,9 @@ void go_back_N_strategy::acknowledge_packet(ack_packet &ack_pkt) {
 }
 
 void go_back_N_strategy::send_packet(data_packet *packet) {
-    sendto(server_socket, packet->pack().c_str(), packet->pack().length(),
-           MSG_CONFIRM, (const struct sockaddr *) &client_address,
-           sizeof client_address);
+    std::cout << "Sending packet with seqno = " << packet->get_seqno() << std::endl;
+    packet_sender::send_packet(server_socket, client_address, packet);
+    packet->set_time_stamp(std::chrono::steady_clock::now());
     set_mutex.lock();
     unacked_packets.insert(packet);
     set_mutex.unlock();
