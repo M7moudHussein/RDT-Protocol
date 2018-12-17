@@ -9,7 +9,7 @@
 #include "../../shared/packet_util.h"
 #include "../packet_sender.h"
 
-#define DEFAULT_WINDOW_SIZE 1 //TODO just random window size... it should be changed to the right value
+#define DEFAULT_WINDOW_SIZE 1
 
 selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int max_window_size) { // Selective Repeat
     selective_repeat_strategy::pkt_builder = new packet_builder(std::move(file_name), DEFAULT_WINDOW_SIZE);

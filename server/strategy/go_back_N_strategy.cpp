@@ -1,4 +1,5 @@
 #include <utility>
+#include <iostream>
 
 //
 // Created by mahmoud on 12/8/18.
@@ -38,6 +39,7 @@ void go_back_N_strategy::handle_time_out() {
             std::vector<data_packet *> temp;
             for (auto it: unacked_packets) {
                 it->set_time_stamp(std::chrono::steady_clock::now());
+                std::cout << "Timeout!Resending pakcet....." << std::endl;
                 go_back_N_strategy::send_packet(it);
                 temp.push_back(it);
             }
@@ -54,17 +56,20 @@ void go_back_N_strategy::acknowledge_packet(ack_packet &ack_pkt) {
     auto it = window.begin();
     while (it != window.end()) {
         if (ack_pkt.get_ackno() == (*it)->get_seqno()) {
+            std::cout << "Ack received for packet with seqno = " << (*it)->get_seqno() << std::endl;
             set_mutex.lock();
             auto back_it = it;
             while (back_it >= window.begin()) {
                 (*back_it)->set_ack(true);
                 unacked_packets.erase((*back_it));
+                std::cout << "Removed packet with seqno = " << (*back_it)->get_seqno() << " from timer thread" << std::endl;
                 it--;
             }
             set_mutex.unlock();
             go_back_N_strategy::advance_window();
             break;
         }
+        it++;
     }
 }
 
@@ -78,17 +83,20 @@ void go_back_N_strategy::send_packet(data_packet *packet) {
 }
 
 void go_back_N_strategy::advance_window() {
-    //TODO implement this function
-}
-
-void go_back_N_strategy::expand_window() {
-    //TODO implement this function
-}
-
-void go_back_N_strategy::shrink_window(int new_size) {
-    //TODO implement this function
-}
-
-void go_back_N_strategy::adjust_window_size() {
-    //TODO implement this function
+    auto pkt_iter = window.begin();
+    while (!window.empty()) {
+        if ((*pkt_iter)->is_acked()) {
+            window.pop_front();
+            std::cout << "Popped packet " << (*pkt_iter)->get_seqno() << std::endl;
+            pkt_iter = window.begin();
+            if (pkt_builder->has_next()) {
+                std::cout << "pkt builder has next, sending next..." << std::endl;
+                auto pkt = pkt_builder->get_next_packet(next_seq_number);
+                window.push_back(pkt);
+                go_back_N_strategy::send_packet(pkt);
+            }
+        } else {
+            break;
+        }
+    }
 }
