@@ -27,7 +27,7 @@ packet_builder::packet_builder(std::string relative_path, int queue_size) {
     packet_builder::queue_size = queue_size;
 }
 
-data_packet *packet_builder::get_next_packet(int &next_seq_num) {
+data_packet *packet_builder::get_next_packet(uint32_t &next_seq_num) {
     if (data_not_read > 0 && packets_read_queue.empty()) {
         size_t read_length = fread(buffer, sizeof(char), BUFFER_SIZE, fp);
         data_not_read -= read_length;

@@ -8,7 +8,7 @@
 
 stop_and_wait_strategy::stop_and_wait_strategy(std::string file_name, int window_size, int max_window_size) {
     stop_and_wait_strategy::pkt_builder = new packet_builder(std::move(file_name), window_size);
-    stop_and_wait_strategy::next_seq_number = 0;
+    stop_and_wait_strategy::next_seq_number = 1;
     stop_and_wait_strategy::window_size = window_size;
     stop_and_wait_strategy::max_window_size = max_window_size;
     stop_and_wait_strategy::threshold = max_window_size;

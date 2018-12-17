@@ -5,7 +5,7 @@
 client_selective_repeat_strategy::client_selective_repeat_strategy(int wnd_size) {
     buffer = new char[MAX_PKT_SIZE];
     window_size = wnd_size;
-    expected_seqno = 0;
+    expected_seqno = 1;
     done = false;
 }
 
@@ -19,9 +19,10 @@ void client_selective_repeat_strategy::run() {
     data_packet packet_received = data_packet(buffer, static_cast<int>(bytes_received));
     uint32_t seqno = packet_received.get_seqno();
     bool corrupted = packet_received.get_cksum() != packet_util::calculate_checksum(&packet_received);
+
     std::cout << "Seq no.: " << seqno << " Expected Seq no: " << expected_seqno << std::endl;
 
-    if (seqno >= expected_seqno && seqno < expected_seqno + window_size && !corrupted) { // in current window
+    if (seqno >= expected_seqno && seqno < (uint64_t) expected_seqno + window_size && !corrupted) { // in current window
         if (is_terminal_pkt(&packet_received)) {
             done = true;
         } else if (window.find(packet_received) == window.end()) {// if the packet was not previously received
@@ -31,11 +32,11 @@ void client_selective_repeat_strategy::run() {
             std::cout << "Sending ACK for packet with seq no: " << packet_received.get_seqno() << std::endl;
             send_ack(new ack_packet(packet_received.get_seqno())); // send ACK for received packet
         }
-    } else if (seqno < expected_seqno && !corrupted) { // in the previous window
-        std::cout << "Packet: " << seqno << " was in a previous window" << std::endl;
+    } else if ((uint64_t) seqno + window_size < expected_seqno && !corrupted) { // in the previous window
+        std::cout << "Packet: " << seqno << " was in a previous window." << std::endl;
         send_ack(new ack_packet(packet_received.get_seqno())); // packet already received and ACKed -> resend ACK for it
     } else {
-        std::cout << "Packet: " << seqno << " is either corrupted after window." << std::endl;
+        std::cout << "Packet: " << seqno << " is either corrupted or in a far window." << std::endl;
     }
 }
 

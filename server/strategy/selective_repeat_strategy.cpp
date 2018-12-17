@@ -13,7 +13,7 @@
 
 selective_repeat_strategy::selective_repeat_strategy(std::string file_name, int max_window_size) { // Selective Repeat
     selective_repeat_strategy::pkt_builder = new packet_builder(std::move(file_name), DEFAULT_WINDOW_SIZE);
-    selective_repeat_strategy::next_seq_number = 0;
+    selective_repeat_strategy::next_seq_number = 1;
     selective_repeat_strategy::window_size = DEFAULT_WINDOW_SIZE;
     selective_repeat_strategy::max_window_size = max_window_size;
     selective_repeat_strategy::threshold = max_window_size / 2;
