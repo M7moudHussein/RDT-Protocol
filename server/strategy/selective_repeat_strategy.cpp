@@ -63,19 +63,22 @@ void selective_repeat_strategy::expand_window() {
 }
 
 void selective_repeat_strategy::shrink_window(int new_size) {
-    std::cout << "SHRINKING................." << std::endl;
     int new_threshold = window_size / 2;
     threshold = new_threshold < 1 ? 1 : new_threshold;
-    window_size = new_size;
+    window_size = new_size < 1 ? 1 : new_size;
+    std::cout << "Shrinking to size = " << window_size << std::endl;
 
-    auto it = window.begin() + window_size;
-    while (it != window.end()) {
-        aux_window.insert(*it);
-        set_mutex.lock();
-        unacked_packets.erase(*it);
-        set_mutex.unlock();
-        it = window.erase(it);
+    if (window.size() > window_size) {
+        auto it = window.begin() + window_size;
+        while (it != window.end()) {
+            aux_window.insert(*it);
+            set_mutex.lock();
+            unacked_packets.erase(*it);
+            set_mutex.unlock();
+            it = window.erase(it);
+        }
     }
+
 //    std::cout << "Aux window: ";
 //    for (auto p : aux_window) {
 //        std::cout << p->get_seqno() << " ";
@@ -116,7 +119,7 @@ void selective_repeat_strategy::handle_time_out() {
             data_packet *first_unacked_pkt = *(unacked_packets.begin());
             set_mutex.unlock();
             if (std::chrono::steady_clock::now() < first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT) {
-//                std::cout << "Timer thread sleeping for 5 seconds..." << std::endl;
+                std::cout << "Timer thread sleeping for 5 seconds..." << std::endl;
                 timer->sleep_until(first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT);
             } else {
                 set_mutex.lock();
