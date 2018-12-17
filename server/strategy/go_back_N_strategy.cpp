@@ -32,9 +32,10 @@ void go_back_N_strategy::handle_time_out() {
         set_mutex.lock();
         data_packet *first_unacked_pkt = *(unacked_packets.begin());
         set_mutex.unlock();
-        if (first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT < std::chrono::steady_clock::now())
+        if (first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT < std::chrono::steady_clock::now()) {
+            std::cout << "Timer thread sleeping for 1 seconds..." << std::endl;
             timer->sleep_until(first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT);
-        else {
+        } else {
             set_mutex.lock();
             std::vector<data_packet *> temp;
             for (auto it: unacked_packets) {
@@ -62,7 +63,8 @@ void go_back_N_strategy::acknowledge_packet(ack_packet &ack_pkt) {
             while (back_it >= window.begin()) {
                 (*back_it)->set_ack(true);
                 unacked_packets.erase((*back_it));
-                std::cout << "Removed packet with seqno = " << (*back_it)->get_seqno() << " from timer thread" << std::endl;
+                std::cout << "Removed packet with seqno = " << (*back_it)->get_seqno() << " from timer thread"
+                          << std::endl;
                 it--;
             }
             set_mutex.unlock();

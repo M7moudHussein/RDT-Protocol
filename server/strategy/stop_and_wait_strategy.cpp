@@ -68,7 +68,7 @@ void stop_and_wait_strategy::handle_time_out() {
             data_packet *first_unacked_pkt = *(unacked_packets.begin());
             set_mutex.unlock();
             if (std::chrono::steady_clock::now() < first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT) {
-                std::cout << "Timer thread sleeping for 5 seconds..." << std::endl;
+                std::cout << "Timer thread sleeping for 1 seconds..." << std::endl;
                 timer->sleep_until(first_unacked_pkt->get_time_stamp() + packet_util::PACKET_TIME_OUT);
             } else {
                 set_mutex.lock();
