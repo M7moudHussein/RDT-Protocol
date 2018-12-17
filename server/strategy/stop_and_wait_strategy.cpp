@@ -36,7 +36,7 @@ void stop_and_wait_strategy::acknowledge_packet(ack_packet &ack_pkt) {
             // This check is to skip duplicate acks
             if (!(*it)->is_acked()) {
                 std::cout << "Ack received for packet with seqno = " << (*it)->get_seqno() << std::endl;
-                (*it)->ack();
+                (*it)->set_ack(true);
                 set_mutex.lock();
                 unacked_packets.erase((*it));
                 set_mutex.unlock();
