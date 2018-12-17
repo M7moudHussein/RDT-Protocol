@@ -18,26 +18,24 @@ void client_selective_repeat_strategy::run() {
 
     data_packet packet_received = data_packet(buffer, static_cast<int>(bytes_received));
     uint32_t seqno = packet_received.get_seqno();
+    bool corrupted = packet_received.get_cksum() != packet_util::calculate_checksum(&packet_received);
     std::cout << "Seq no.: " << seqno << " Expected Seq no: " << expected_seqno << std::endl;
 
-    if (seqno >= expected_seqno && seqno < expected_seqno + window_size &&
-        packet_received.get_cksum() == packet_util::calculate_checksum(&packet_received)) { // in current window
+    if (seqno >= expected_seqno && seqno < expected_seqno + window_size && !corrupted) { // in current window
         if (is_terminal_pkt(&packet_received)) {
             done = true;
-        } else if (window.find(packet_received) ==
-                   window.end()) {// if the packet was not previously received //TODO ADD CHECKSUM CONDITION HERE
+        } else if (window.find(packet_received) == window.end()) {// if the packet was not previously received
             window.insert(packet_received); // buffer
-            if (seqno ==
-                expected_seqno) // in order (this packet has a sequence number equal to the base of the receive window)
+            if (seqno == expected_seqno) // in order (this packet has a sequence number equal to the base of the receive window)
                 deliver_buffered_packets();
             std::cout << "Sending ACK for packet with seq no: " << packet_received.get_seqno() << std::endl;
             send_ack(new ack_packet(packet_received.get_seqno())); // send ACK for received packet
         }
-    } else if (seqno < expected_seqno) { // in the previous window
+    } else if (seqno < expected_seqno && !corrupted) { // in the previous window
         std::cout << "Packet: " << seqno << " was in a previous window" << std::endl;
         send_ack(new ack_packet(packet_received.get_seqno())); // packet already received and ACKed -> resend ACK for it
     } else {
-        std::cout << "Packet: " << seqno << " is after window." << std::endl;
+        std::cout << "Packet: " << seqno << " is either corrupted after window." << std::endl;
     }
 }
 
@@ -47,10 +45,8 @@ void client_selective_repeat_strategy::deliver_buffered_packets() {
     for (auto pkt_iter = window.begin(); pkt_iter != window.end();) {
         if ((*pkt_iter).get_seqno() == expected_seqno) { // consecutive
             file_data.append((*pkt_iter).get_data());
-            pkt_iter = window.erase(
-                    pkt_iter); // remove buffered packet, returning an iterator to the next element (packet)
-            file_writer::write(
-                    file_data); // write buffered data to file on intervals and then clear file data buffer to be used later again.
+            pkt_iter = window.erase(pkt_iter); // remove buffered packet, returning an iterator to the next element (packet)
+            file_writer::write(file_data); // write buffered data to file on intervals and then clear file data buffer to be used later again.
             file_data.clear();
             expected_seqno++;
         } else {

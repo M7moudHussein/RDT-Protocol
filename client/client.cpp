@@ -143,6 +143,7 @@ void client::receive_datagrams() {
     file_writer::open(parser.get_req_file_name());
 //    file_writer::open("output.txt");
 
+
     while (!rdt->is_done())
         rdt->run();
 
